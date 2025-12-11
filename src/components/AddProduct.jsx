@@ -7,7 +7,7 @@ const uploadToCloudinary = async (file) => {
   formData.append("upload_preset", "myamazonimages");  // your preset
 
   const res = await fetch(
-    "https://api.cloudinary.com/v1_1/dnhax7kwu/image/upload",
+    `${import.meta.env.VITE_MAPBOX_BUCKET}`,
     { method: "POST", body: formData }
   );
 
@@ -60,7 +60,7 @@ const AddProduct = () => {
     };
 
     // 3️⃣ Send JSON to backend
-    const response = await fetch("http://localhost:8080/api/addProduct", {
+    const response = await fetch(`${import.meta.env.VITE_API_URL}/api/addProduct`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

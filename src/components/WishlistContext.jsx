@@ -7,7 +7,7 @@ const WishlistProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState([]);
   const token = localStorage.getItem("token");
 
-  const API = "http://localhost:8080";
+  const API = `${import.meta.env.VITE_API_URL}`;
 
   const fetchWishlist = async () => {
     if (!token) return;

@@ -30,7 +30,7 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/cart", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/cart`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -60,7 +60,7 @@ export const CartProvider = ({ children }) => {
   const addToCart = async (product) => {
     if (!token) return alert("Please login to add items to cart!");
 
-    await fetch(`http://localhost:8080/api/cart/add/${product.id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/cart/add/${product.id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -74,7 +74,7 @@ export const CartProvider = ({ children }) => {
   // 🔥 Remove from Cart
   // ---------------------------------------------------------
   const removeFromCart = async (productId) => {
-    await fetch(`http://localhost:8080/api/cart/remove/${productId}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/cart/remove/${productId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -89,7 +89,7 @@ export const CartProvider = ({ children }) => {
   // ---------------------------------------------------------
   const updateQuantity = async (productId, nextQty) => {
     await fetch(
-      `http://localhost:8080/api/cart/update/${productId}/${nextQty}`,
+      `${import.meta.env.VITE_API_URL}/api/cart/update/${productId}/${nextQty}`,
       {
         method: "PUT",
         headers: {

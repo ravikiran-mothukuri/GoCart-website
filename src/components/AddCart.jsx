@@ -10,7 +10,7 @@ const AddCart = () => {
   const handlePlaceOrder = async () => {
   const token = localStorage.getItem("token");
 
-  const res = await fetch("http://localhost:8080/api/order/place", {
+  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/order/place`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

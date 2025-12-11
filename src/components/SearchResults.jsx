@@ -10,7 +10,7 @@ const SearchResults = () => {
   const [products, setProducts] = useState([]);
 
   useEffect(() => {
-    fetch(`http://localhost:8080/api/products/search?query=${query}`)
+    fetch(`${import.meta.env.VITE_API_URL}/api/products/search?query=${query}`)
       .then(res => res.json())
       .then(data => setProducts(data));
   }, [query]);

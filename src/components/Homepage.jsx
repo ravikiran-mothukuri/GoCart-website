@@ -15,7 +15,7 @@ const Homepage = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch("http://localhost:8080/api/products");
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
         setProducts(data);
@@ -41,7 +41,7 @@ const Homepage = () => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      const response = await fetch(`http://localhost:8080/api/product/${id}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/product/${id}`, {
         method: "DELETE",
         headers: {
         Authorization: `Bearer ${token}`,

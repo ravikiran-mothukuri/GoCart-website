@@ -52,7 +52,7 @@ const UserProfile = () => {
   // ================================
   useEffect(() => {
     const fetchUser = async () => {
-      const res = await fetch("http://localhost:8080/api/user/profile", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
@@ -187,7 +187,7 @@ const UserProfile = () => {
   // SAVE PROFILE
   // ================================
   const saveProfile = async () => {
-    const res = await fetch("http://localhost:8080/api/user/profile", {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
