@@ -1,0 +1,33 @@
+.landing-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #bbf7d0, #f0fdf4);
+  text-align: center;
+}
+
+.landing-buttons {
+  display: flex;
+  gap: 20px;
+}
+
+.landing-btn {
+  padding: 14px 28px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.user-btn {
+  background: #22c55e;
+  color: white;
+}
+
+.delivery-btn {
+  background: #2563eb;
+  color: white;
+}

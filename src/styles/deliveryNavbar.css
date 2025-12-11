@@ -1,0 +1,65 @@
+/* Navbar Wrapper */
+.delivery-navbar {
+  width: 100%;
+  background: rgba(30, 58, 138, 0.75); /* soft blue similar to user theme */
+  backdrop-filter: blur(10px);
+  padding: 12px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* Centered Inner Container (same as user navbar) */
+.delivery-nav-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Logo */
+.delivery-logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+}
+
+/* Links container */
+.delivery-links {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+/* Normal links */
+.delivery-links a {
+  text-decoration: none;
+  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.delivery-links a:hover {
+  color: #ffffff;
+}
+
+/* Logout button */
+.delivery-logout {
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+.delivery-logout:hover {
+  background: #dc2626;
+}

@@ -1,0 +1,89 @@
+/* DELIVERY PARTNER AUTH SCREENS */
+/* Same green UI theme used in your UserProfile */
+
+.partner-auth-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #ecfdf5 0%, #ffffff 50%, #eff6ff 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.partner-auth-card {
+  width: 420px;
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 6px 16px rgba(16, 185, 129, 0.2);
+  border: 2px solid #d1fae5;
+}
+
+.partner-title {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #065f46;
+}
+
+.partner-subtitle {
+  text-align: center;
+  color: #6b7280;
+  margin-bottom: 28px;
+}
+
+.partner-field {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+.partner-field label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.partner-field input {
+  padding: 12px 14px;
+  border: 2px solid #d1d5db;
+  border-radius: 10px;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.partner-field input:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  outline: none;
+}
+
+.partner-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: 0.2s;
+}
+
+.partner-btn:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(135deg, #059669, #047857);
+}
+
+.partner-link {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 14px;
+  color: #065f46;
+  cursor: pointer;
+  text-decoration: underline;
+}
