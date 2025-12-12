@@ -2,6 +2,7 @@ import React, { useContext, useMemo, useCallback } from "react";
 import { CartContext } from "./CartContext.jsx";
 import "../styles/addcart.css";
 
+// chenges made. 12: 22pm
 const AddCart = () => {
   const { cartItems, updateQuantity, removeFromCart, fetchCart } =
   useContext(CartContext);
