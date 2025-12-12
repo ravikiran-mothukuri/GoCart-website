@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import Homepage from "./components/Homepage";
-// import AddProduct from "./components/AddProduct";
+import AddProduct from "./components/AddProduct";
 import ProductDetails from "./components/ProductDetails";
 import { CartProvider } from "./components/CartContext";
 import AddCart from "./components/AddCart";
@@ -60,7 +60,7 @@ function LayoutWrapper() {
         <Route path="/wishlist" element={<WishlistPage />} />
         <Route path="/search" element={<SearchResults />} />
         <Route path="/userprofile" element={<UserProfile />} />
-
+        <Route path="/addproduct" element={<AddProduct />} />
         {/* DELIVERY ROUTES */}
         <Route path="/delivery/auth" element={<DeliveryAuth />} />
         <Route path="/delivery/register" element={<PartnerRegister />} />

@@ -14,7 +14,7 @@ const Register = () => {
       await axios.post(`${import.meta.env.VITE_API_URL}/api/register`, user);
       alert("Registration successful! Please login.");
       
-      navigate("/");
+      navigate("/login");
     // eslint-disable-next-line no-unused-vars
     } catch (err) {
       alert("Error registering user. Try again.");
