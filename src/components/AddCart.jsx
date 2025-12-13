@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useCallback } from "react";
+import React, { useContext, useMemo} from "react";
 import { CartContext } from "./CartContext.jsx";
 import "../styles/addcart.css";
 
@@ -38,34 +38,18 @@ const AddCart = () => {
     []
   );
 
-  const applyQty = useCallback(
-    (productId, next) => {
-      const nextQty = Number.isFinite(next) ? next : 0;
-      if (nextQty <= 0) {
-        removeFromCart(productId);
-      } else {
-        updateQuantity(productId, nextQty);
-      }
-    },
-    [removeFromCart, updateQuantity]
-  );
-
-  const dec = (item) => applyQty(item.productId, item.quantity - 1);
-  const inc = (item) => applyQty(item.productId, item.quantity + 1);
-
-  const onTyped = (item, e) => {
-    const raw = e.target.value;
-    if (raw === "") return;
-    const next = Number(raw);
-    if (!Number.isFinite(next)) return;
-    applyQty(item.productId, next);
+  const dec = async(item) => {
+    if(item.quantity==1)
+      await removeFromCart(item.productId);
+    else
+      await updateQuantity(item.productId, item.quantity - 1)
   };
 
-  const onBlurCommit = (item, e) => {
-    const raw = e.target.value;
-    const next = raw === "" ? item.quantity : Number(raw);
-    applyQty(item.productId, next);
+  const inc = async(item) => {
+    await updateQuantity(item.productId, item.quantity + 1)
   };
+
+  
 
   if (!cartItems || cartItems.length === 0) {
     return <h2 className="empty-cart">🛒 Your cart is empty!</h2>;
@@ -92,9 +76,7 @@ const AddCart = () => {
                 </button>
                 <input
                   className="qty-input"
-                  defaultValue={item.quantity}
-                  onBlur={(e) => onBlurCommit(item, e)}
-                  onChange={(e) => onTyped(item, e)}
+                  value={item.quantity}
                 />
                 <button className="qty-btn" onClick={() => inc(item)}>
                   +

@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import { useParams } from "react-router-dom";
+import { useParams , useNavigate} from "react-router-dom";
 import CartContext from "./CartContext";
 import { WishlistContext } from "./WishlistContext";
 
@@ -13,7 +13,8 @@ const ProductDetails = () => {
   const { addToWishlist } = useContext(WishlistContext);
   const { addToCart } = useContext(CartContext);
 
-  
+  const navigate= useNavigate();
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -35,29 +36,62 @@ const ProductDetails = () => {
 
   const inStock = product.quantity > 0;
 
-  const handleAddToCart = () => {
+  const handleAddToCart =async (product) => {
+    const token= localStorage.getItem("token");
+    if(!token)
+    {
+      alert("Please Login first.");
+      return;
+    }
+
+    if (product.quantity<=0) {
+      alert("This item is out of stock.");
+      return;
+    }
+    const success= await addToCart(product);
+    if(success)
+      alert(`${product.name} added to cart!`);
+  };
+
+  const handleAddToWishlist = async () => {
+    const token= localStorage.getItem('token');
+    if(!token){
+      alert("Please login first.");
+      return;
+    }
+
+    const result = await addToWishlist(product);
+
+    if(result?.status === "no-login") {
+      alert("Please login first!");
+      return;
+    }
+
+    if (result.status === "exists") {
+      alert("Product already in wishlist!");
+    } 
+    else{
+      alert("Product added to wishlist!");
+    }
+    
+  };
+
+
+  const handleBuyNow=()=>{
+    const token= localStorage.getItem("token");
+    if(!token){
+      alert("Please login first to Buy.");
+      return;
+    }
+
     if (!inStock) {
       alert("This item is out of stock.");
       return;
     }
     addToCart(product);
-    alert(`${product.name} added to cart!`);
-  };
+    navigate('/cart')
 
-  const handleAddToWishlist = async () => {
-  const result = await addToWishlist(product);
-
-  if (result.status === "exists") {
-    alert("Product already in wishlist!");
-  } 
-  else if (result.status === "added") {
-    alert("Product added to wishlist!");
   }
-  else if (result.status === "no-login") {
-    alert("Please login first!");
-  }
-};
-
 
   const handleShare = async () => {
     try {
@@ -98,10 +132,10 @@ const ProductDetails = () => {
       <p><strong>Description:</strong> {product.description}</p>
 
       <div className="actions">
-        <button className="btn btn-cart" onClick={handleAddToCart} disabled={!inStock}>
+        <button className="btn btn-cart" onClick={()=> handleAddToCart(product)} disabled={!inStock}>
           {inStock ? "Add to Cart" : "Out of Stock"}
         </button>
-        <button className="btn btn-buy" disabled={!inStock}>
+        <button className="btn btn-buy" disabled={!inStock} onClick={()=> handleBuyNow()}>
           Buy Now
         </button>
         <button className="btn btn-ghost" onClick={()=>handleAddToWishlist(product)}>

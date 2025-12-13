@@ -58,16 +58,33 @@ export const CartProvider = ({ children }) => {
   // 🔥 Add to Cart
   // ---------------------------------------------------------
   const addToCart = async (product) => {
-    if (!token) return alert("Please login to add items to cart!");
+    if(!token) 
+      return alert("Please login to add items to cart!");
 
-    await fetch(`${import.meta.env.VITE_API_URL}/api/cart/add/${product.id}`, {
+    const res= await fetch(`${import.meta.env.VITE_API_URL}/api/cart/add/${product.id}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
 
-    fetchCart();
+    if (!res.ok) {
+    const msg = await res.text();
+
+    if (msg.includes("OUT_OF_STOCK")) {
+      alert("Product is out of stock!");
+    } else if (msg.includes("STOCK_LIMIT_REACHED")) {
+      alert("Stock limit reached!");
+    } else if (res.status === 401) {
+      alert("Please login again");
+    } else {
+      alert("Failed to add to cart");
+    }
+    return false;
+    }
+
+      fetchCart();
+      return true;
   };
 
   // ---------------------------------------------------------
@@ -88,7 +105,7 @@ export const CartProvider = ({ children }) => {
   // 🔥 Update Quantity
   // ---------------------------------------------------------
   const updateQuantity = async (productId, nextQty) => {
-    await fetch(
+    const res= await fetch(
       `${import.meta.env.VITE_API_URL}/api/cart/update/${productId}/${nextQty}`,
       {
         method: "PUT",
@@ -98,7 +115,18 @@ export const CartProvider = ({ children }) => {
       }
     );
 
+    if (!res.ok) {
+      const msg = await res.text();
+      if (msg.includes("STOCK_LIMIT_REACHED")) {
+        alert("Stock limit reached");
+      } else {
+        alert("Failed to update quantity");
+      }
+      return false;
+    }
+
     fetchCart();
+    return true;
   };
 
   // ---------------------------------------------------------

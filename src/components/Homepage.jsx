@@ -1,5 +1,6 @@
 import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
+// import axios from 'axios';
 import CartContext from "./CartContext";
 import "../styles/homepage.css";
 
@@ -27,14 +28,25 @@ const Homepage = () => {
   }, []);
 
   
-  const handleAddToCart= (product)=>{
+  const handleAddToCart= async (product)=>{
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Please login to add items to cart.");
+      return;
+    }
+
     const inStock = product.quantity <= 0;
     if (inStock) {
       alert("This item is out of stock.");
       return;
     }
-    addToCart(product);
-    alert(`${product.name} added to cart!`);
+    
+    
+    const sucess= await addToCart(product);
+    if(sucess)
+      alert(`${product.name} added to cart!`);
+
   }
 
   const handleDelete = async (id) => {
