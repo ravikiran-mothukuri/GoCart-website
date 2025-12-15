@@ -1,5 +1,5 @@
 import { useState,useRef } from "react";
-import '../styles/addproduct.css';
+import '../styles/user/addproduct.css';
 
 const uploadToCloudinary = async (file) => {
   const formData = new FormData();

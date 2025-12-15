@@ -2,7 +2,7 @@ import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 // import axios from 'axios';
 import CartContext from "./CartContext";
-import "../styles/homepage.css";
+import "../styles/user/homepage.css";
 
 
 

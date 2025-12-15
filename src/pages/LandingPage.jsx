@@ -12,7 +12,7 @@ export default function LandingPage() {
           I am a Customer
         </Link>
 
-        <Link to="/delivery/auth" className="landing-btn delivery-btn">
+        <Link to="/delivery/login" className="landing-btn delivery-btn">
           I am a Delivery Partner
         </Link>
       </div>

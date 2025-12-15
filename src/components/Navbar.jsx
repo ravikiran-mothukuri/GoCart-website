@@ -1,7 +1,7 @@
 // Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { useState, useEffect,useContext } from "react";
-import "../styles/navbar.css";
+import "../styles/user/navbar.css";
 import { UserContext } from "./UserContext";
 
 

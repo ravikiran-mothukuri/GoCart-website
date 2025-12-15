@@ -1,0 +1,63 @@
+.delivery-page {
+  padding: 32px;
+  min-height: calc(100vh - 64px);
+  background: #f0fdf4;
+}
+
+/* Headings */
+.delivery-page h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: #065f46;
+  margin-bottom: 24px;
+}
+
+/* Cards */
+.stat-card,
+.order-card,
+.earnings-card,
+.profile-card {
+  background: white;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 6px 14px rgba(16, 185, 129, 0.15);
+  border: 1px solid #d1fae5;
+}
+
+/* Dashboard grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.stat-card h3 {
+  color: #047857;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.stat-card p {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* Orders */
+.order-card {
+  margin-bottom: 16px;
+}
+
+.order-card button {
+  margin-top: 10px;
+  background: #10b981;
+  border: none;
+  padding: 8px 14px;
+  color: white;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.order-card button:hover {
+  background: #059669;
+}

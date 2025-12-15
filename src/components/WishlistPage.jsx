@@ -1,6 +1,6 @@
 import { useContext } from "react";
 import { WishlistContext } from "./WishlistContext";
-import "../styles/wishlist.css";
+import "../styles/user/wishlist.css";
 
 const WishlistPage = () => {
   const { wishlist, removeFromWishlist } = useContext(WishlistContext);

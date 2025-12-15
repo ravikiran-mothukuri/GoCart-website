@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useEffect, useState, useRef} from "react";
-import "../styles/userprofile.css";
+import "../styles/user/userprofile.css";
 
 import mapboxgl from "mapbox-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";

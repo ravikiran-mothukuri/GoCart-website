@@ -1,6 +1,6 @@
 import React, { useContext, useMemo} from "react";
 import { CartContext } from "./CartContext.jsx";
-import "../styles/addcart.css";
+import "../styles/user/addcart.css";
 
 // chenges made. 12: 22pm
 const AddCart = () => {

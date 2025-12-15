@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import '../styles/searchcard.css';
+import '../styles/user/searchcard.css';
 
 const ProductCard = ({ product }) => {
   return (

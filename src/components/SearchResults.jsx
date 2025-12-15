@@ -1,7 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import ProductCard from "./ProductCard";
-import "../styles/searchresults.css";
+import "../styles/user/searchresults.css";
 
 const SearchResults = () => {
   const [searchParams] = useSearchParams();

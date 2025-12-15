@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import img from '../assets/trolley.png';
-import "../styles/login.css";
+import "../styles/user/login.css";
 import axios from "axios";
 
 const Login = () => {

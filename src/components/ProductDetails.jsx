@@ -3,7 +3,7 @@ import { useParams , useNavigate} from "react-router-dom";
 import CartContext from "./CartContext";
 import { WishlistContext } from "./WishlistContext";
 
-import "../styles/productdetails.css";
+import "../styles/user/productdetails.css";
 
 const ProductDetails = () => {
   const { id } = useParams();
