@@ -1,69 +1,186 @@
+/* deliveryNavbar.css - Modern, Professional Design */
+
 .delivery-navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  height: 64px;
-  background: linear-gradient(135deg, #10b981, #059669);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 28px;
-  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
+  padding: 16px 32px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-bottom: 2px solid #e5e7eb;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
 }
 
-/* Logo */
 .delivery-logo {
-  font-size: 20px;
-  font-weight: 700;
-  color: white;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #065f46;
+  cursor: pointer;
+  transition: transform 0.2s;
 }
 
-/* Links */
+.delivery-logo:hover {
+  transform: scale(1.05);
+}
+
+.delivery-logo span {
+  background: linear-gradient(135deg, #10b981, #059669);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
 .delivery-links {
   display: flex;
-  gap: 26px;
+  gap: 8px;
+  align-items: center;
 }
 
 .delivery-link {
-  color: #ecfdf5;
-  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: 12px;
   text-decoration: none;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 15px;
+  transition: all 0.3s ease;
   position: relative;
-  padding-bottom: 4px;
+  overflow: hidden;
+}
+
+.delivery-link::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #10b981, #059669);
+  transform: translateX(-50%);
+  transition: width 0.3s ease;
 }
 
 .delivery-link:hover {
-  color: #ffffff;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.05);
 }
 
-/* Active underline */
-.delivery-link.active::after {
-  content: "";
-  position: absolute;
-  bottom: -6px;
-  left: 0;
-  width: 100%;
-  height: 3px;
-  background: #ffffff;
-  border-radius: 10px;
+.delivery-link:hover::before {
+  width: 70%;
 }
 
-/* Logout button */
-.delivery-logout {
-  background: white;
-  color: #047857;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-weight: 600;
+.delivery-link.active {
+  color: #059669;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.15));
+  border: 2px solid #10b981;
+}
+
+.active-status {
+  padding: 10px 24px;
+  border: 2px solid #d1d5db;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.active-status.on {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border-color: #10b981;
+  animation: pulse-green 2s infinite;
+}
+
+.active-status.off {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border-color: #ef4444;
+}
+
+@keyframes pulse-green {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+}
+
+.delivery-logout {
+  padding: 10px 24px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
 }
 
 .delivery-logout:hover {
-  background: #ecfdf5;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+  background: linear-gradient(135deg, #dc2626, #b91c1c);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .delivery-navbar {
+    padding: 12px 20px;
+  }
+
+  .delivery-links {
+    gap: 4px;
+  }
+
+  .delivery-link {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .delivery-navbar {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .delivery-logo span {
+    display: none;
+  }
+
+  .delivery-links {
+    order: 3;
+    width: 100%;
+    justify-content: space-around;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .delivery-link {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .active-status {
+    padding: 8px 18px;
+    font-size: 12px;
+  }
+
+  .delivery-logout {
+    padding: 8px 18px;
+    font-size: 12px;
+  }
 }

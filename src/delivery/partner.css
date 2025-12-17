@@ -87,3 +87,10 @@
   cursor: pointer;
   text-decoration: underline;
 }
+
+@media (max-width: 480px) {
+  .partner-auth-card {
+    width: 100%;
+    padding: 24px;
+  }
+}
