@@ -13,7 +13,7 @@ export default function PartnerRegister() {
   });
 
   const handleLogin=()=>{
-    navigate("/delivery/auth");
+    navigate("/delivery/login");
   }
 
   const handleChange = (e) => {
