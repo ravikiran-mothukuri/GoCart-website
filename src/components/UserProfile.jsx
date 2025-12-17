@@ -303,34 +303,7 @@ const UserProfile = () => {
               </select>
             </div>
 
-            
-
-            {/* <div className="form-field">
-              <label className="field-label">Country</label>
-              <input
-                disabled={!isEditing}
-                className="field-input"
-                name="country"
-                value={user.country}
-                onChange={(e) => setUser({ ...user, country: e.target.value })}
-              />
-            </div> */}
-
-            {/* <div className="form-field">
-              <label className="field-label">Language</label>
-              <select
-                disabled={!isEditing}
-                className="field-input"
-                name="language"
-                value={user.language}
-                onChange={(e) => setUser({ ...user, language: e.target.value })}
-              >
-                <option>English</option>
-                <option>Hindi</option>
-                <option>Telugu</option>
-                <option>Tamil</option>
-              </select>
-            </div> */}
+          
           </div>
         </div>
 

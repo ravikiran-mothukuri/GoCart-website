@@ -4,16 +4,16 @@ import '../styles/delivery/delivery.css';
 
 const DeliveryProfile = () => {
   const [profile, setProfile] = useState({
-    username: '',
+    name: '',
     mobile: '',
     vehicle: 'Bike',
     city: 'Hyderabad',
     status: 'IDLE',
-    currentLatitude: 0.0,
-    currentLongitude: 0.0
+    currentLatitude: 17.385044,
+    currentLongitude: 78.486671
   });
   const [loading, setLoading] = useState(true);
-  // eslint-disable-next-line no-unused-vars
+  
   const [isEditing, setIsEditing] = useState(false);
   const deliveryToken = localStorage.getItem("deliveryToken");
 
@@ -21,18 +21,62 @@ const DeliveryProfile = () => {
     fetchProfile();
   }, []);
 
+  const cancelEdit = () => {
+    setIsEditing(false);
+    fetchProfile(); // reload original data
+  };
+
+
+  const saveProfile = async () => {
+    try {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/delivery/update/profile`,
+        {
+          name: profile.name,
+          mobile: profile.mobile,
+          vehicle: profile.vehicle,
+          currentLatitude: profile.currentLatitude,
+          currentLongitude: profile.currentLongitude,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${deliveryToken}`,
+          },
+        }
+      );
+
+      alert("Profile updated successfully");
+      setIsEditing(false);
+    } catch (err) {
+      alert("Failed to update profile");
+      console.error(err);
+    }
+  };
+
+
+
   const fetchProfile = async () => {
     try {
-      // Mock profile data - replace with actual API call
+      
+      const res= await axios.get(`${import.meta.env.VITE_API_URL}/api/delivery/profile`,{
+        headers:{
+          Authorization: `Bearer ${localStorage.getItem("deliveryToken")}`,
+        },
+      })
+
+     
+
+      const d= res.data.partner;
+      
       setProfile({
-        username: 'Randy Orthon',
-        mobile: '9XXXXXXXXX',
-        vehicle: 'Bike',
-        city: 'Hyderabad',
-        status: 'AVAILABLE',
-        currentLatitude: 17.4485,
-        currentLongitude: 78.3908
+        name: d.name || "User" ,
+        mobile: d.mobile || "9XXXXXXXXX",
+        vehicle: d.vehicle || "BIKE",
+        status: d.status,
+        currentLatitude: d.latitude || 17.385044,
+        currentLongitude: d.longitude || 78.486671
       });
+
       setLoading(false);
     } catch (err) {
       console.error("Failed to fetch profile", err);
@@ -45,7 +89,7 @@ const DeliveryProfile = () => {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
-            // eslint-disable-next-line no-unused-vars
+            
             const res = await axios.put(
               `${import.meta.env.VITE_API_URL}/api/delivery/updateLocation`,
               {
@@ -58,10 +102,11 @@ const DeliveryProfile = () => {
                 }
               }
             );
+            console.log(res);
             setProfile({
               ...profile,
-              currentLatitude: position.coords.latitude,
-              currentLongitude: position.coords.longitude
+              currentLatitude: res.data.coords.latitude,
+              currentLongitude: res.data.coords.longitude
             });
             alert("Location updated successfully!");
           } catch (err) {
@@ -94,26 +139,70 @@ const DeliveryProfile = () => {
       <h2>👤 My Profile</h2>
 
       <div className="profile-card">
-        <p><strong>Name:</strong> {profile.username}</p>
-        <p><strong>Phone:</strong> {profile.mobile}</p>
-        <p><strong>Vehicle:</strong> {profile.vehicle}</p>
-        <p><strong>City:</strong> {profile.city}</p>
-        <p><strong>Status:</strong> 
-          <span style={{
-            marginLeft: '12px',
-            padding: '4px 12px',
-            borderRadius: '12px',
-            background: profile.status === 'AVAILABLE' 
-              ? 'linear-gradient(135deg, #10b981, #059669)' 
-              : 'linear-gradient(135deg, #ef4444, #dc2626)',
-            color: 'white',
-            fontSize: '14px',
-            fontWeight: '700'
-          }}>
-            {profile.status}
-          </span>
+        <p>
+          <strong>Name:</strong>{" "}
+          {isEditing ? (
+            <input
+              value={profile.name}
+              onChange={(e) =>
+                setProfile({ ...profile, name: e.target.value })
+              }
+            />
+          ) : (
+            profile.name
+          )}
+        </p>
+
+        <p>
+          <strong>Phone:</strong>{" "}
+          {isEditing ? (
+            <input
+              value={profile.mobile}
+              onChange={(e) =>
+                setProfile({ ...profile, mobile: e.target.value })
+              }
+            />
+          ) : (
+            profile.mobile
+          )}
+        </p>
+
+        <p>
+          <strong>Vehicle:</strong>{" "}
+          {isEditing ? (
+            <select
+              value={profile.vehicle}
+              onChange={(e) =>
+                setProfile({ ...profile, vehicle: e.target.value })
+              }
+            >
+              <option value="BIKE">Bike</option>
+              <option value="SCOOTER">Scooter</option>
+            </select>
+          ) : (
+            profile.vehicle
+          )}
+        </p>
+
+        <p>
+          <strong>Status:</strong> {profile.status}
         </p>
       </div>
+
+      <div className="profile-actions">
+        {isEditing ? (
+          <>
+            <button className="save" onClick={saveProfile}>Save</button>
+            <button className="cancel" onClick={cancelEdit}>Cancel</button>
+          </>
+        ) : (
+          <button className="edit" onClick={() => setIsEditing(true)}>
+            Edit Profile
+          </button>
+        )}
+      </div>
+
+
 
       {/* Location Section */}
       <div style={{ marginTop: '32px' }}>

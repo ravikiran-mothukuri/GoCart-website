@@ -33,7 +33,7 @@ export default function PartnerRegister() {
     }
 
     alert("Registered Successfully! Now login.");
-    navigate("/delivery/auth");
+    navigate("/delivery/login");
   };
 
   return (

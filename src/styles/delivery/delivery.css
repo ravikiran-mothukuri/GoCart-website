@@ -7,6 +7,60 @@
   animation: fadeIn 0.5s ease;
 }
 
+.profile-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+.profile-actions button {
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.profile-actions .save {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+.profile-actions .cancel {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+}
+
+.profile-actions .edit {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.profile-actions button:hover {
+  transform: translateY(-2px);
+}
+
+
+.profile-card input,
+.profile-card select {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid #d1fae5;
+  outline: none;
+  font-size: 15px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.profile-card input:focus,
+.profile-card select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+
+
 @keyframes fadeIn {
   from {
     opacity: 0;
