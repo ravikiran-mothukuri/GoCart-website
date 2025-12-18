@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import '../styles/delivery/delivery.css';
+import { useContext } from "react";
+import { AuthContext } from "../pages/AuthContext";
 
 const DeliveryDashboard = () => {
   const [stats, setStats] = useState({
@@ -12,9 +14,11 @@ const DeliveryDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   // eslint-disable-next-line no-unused-vars
-  const deliveryToken = localStorage.getItem("deliveryToken");
+  const { deliveryToken } = useContext(AuthContext);
 
   useEffect(() => {
+    if(!deliveryToken)
+      return;
     fetchDashboardData();
   }, []);
 
@@ -24,7 +28,7 @@ const DeliveryDashboard = () => {
       const token = localStorage.getItem('deliveryToken');
       if (token) {
         // Extract username from token or fetch from API
-        // For now, using mock data
+        
         setUsername('Delivery Partner');
       }
 

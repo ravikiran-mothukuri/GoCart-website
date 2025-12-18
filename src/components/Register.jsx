@@ -67,7 +67,7 @@ const Register = () => {
 
         <p className="auth-text">
           Already have an account?{" "}
-          <Link to="/" className="auth-link">
+          <Link to="/login" className="auth-link">
             Sign in
           </Link>
         </p>

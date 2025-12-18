@@ -10,24 +10,30 @@ const DeliveryNavbar = () => {
   const location = useLocation();
 
   const [active, setActive] = useState(false);
-  const deliveryToken= localStorage.getItem("deliveryToken");
+  // const deliveryToken= localStorage.getItem("deliveryToken");
+  const { deliveryToken } = useContext(AuthContext);
 
   useEffect(() => {
-  const fetchOnline = async () => {
-    const res = await axios.get(
-      `${import.meta.env.VITE_API_URL}/api/delivery/profile`,
-      {
-        headers: {
-          Authorization: `Bearer ${deliveryToken}`,
-        },
-      }
-    );
+    
+    if(!deliveryToken)
+      return;
 
-    setActive(res.data.partner.online === "ON");
-  };
+    const fetchOnline = async () => {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/delivery/profile`,
+        {
+          headers: {
+            Authorization: `Bearer ${deliveryToken}`,
+          },
+        }
+      );
+
+      setActive(res.data.partner.online === "ON");
+    };
 
   fetchOnline();
-}, []);
+
+}, [deliveryToken]);
 
 
   const handleStatus= async()=>{
@@ -72,6 +78,10 @@ const DeliveryNavbar = () => {
         </Link>
         <Link className={isActive("/delivery/earnings")} to="/delivery/earnings">
           Earnings
+        </Link>
+
+        <Link className={isActive("/delivery/completed")} to="/delivery/complete">
+          Complete Orders
         </Link>
         
         <Link className={isActive("/delivery/profile")} to="/delivery/profile">

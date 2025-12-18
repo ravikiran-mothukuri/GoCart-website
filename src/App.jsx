@@ -18,6 +18,7 @@ import WishlistPage from "./components/WishlistPage";
 import SearchResults from "./components/SearchResults";
 import UserProfile from "./components/UserProfile";
 import { UserProvider } from "./components/UserContext";
+import MyOrders from "./components/MyOrders";
 
 
 import LandingPage from "./pages/LandingPage";
@@ -28,7 +29,7 @@ import DeliveryEarnings from "./delivery/DeliveryEarnings";
 import DeliveryDashboard from "./delivery/DeliveryDashboard";
 import DeliveryOrders from "./delivery/DeliveryOrders";
 import DeliveryProfile from "./delivery/DeliveryProfile";
-
+import DeliveryCompletedOrders from "./delivery/DeliveryCompletedOrders";
 
 function LayoutWrapper() {
   const location = useLocation();
@@ -63,6 +64,7 @@ function LayoutWrapper() {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/userprofile" element={<UserProfile />} />
         <Route path="/addproduct" element={<AddProduct />} />
+        <Route path="/orders" element={<MyOrders />} />
 
         {/* DELIVERY ROUTES */}
         
@@ -70,7 +72,8 @@ function LayoutWrapper() {
         
         <Route path="/delivery/register" element={<PartnerRegister />} />
         <Route path="/delivery/login" element={<PartnerLogin />} />
-        
+        <Route path="/delivery/complete" element={<DeliveryCompletedOrders />} />
+
         <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
         <Route path="/delivery/orders" element={<DeliveryOrders />} />
         <Route path="/delivery/earnings" element={<DeliveryEarnings />} />

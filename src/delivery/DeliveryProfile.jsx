@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../styles/delivery/delivery.css';
+import { useContext } from "react";
+import { AuthContext } from "../pages/AuthContext";
 
 const DeliveryProfile = () => {
   const [profile, setProfile] = useState({
@@ -8,18 +10,22 @@ const DeliveryProfile = () => {
     mobile: '',
     vehicle: 'Bike',
     city: 'Hyderabad',
-    status: 'IDLE',
     currentLatitude: 17.385044,
     currentLongitude: 78.486671
   });
   const [loading, setLoading] = useState(true);
   
   const [isEditing, setIsEditing] = useState(false);
-  const deliveryToken = localStorage.getItem("deliveryToken");
+  // const deliveryToken = localStorage.getItem("deliveryToken");
+  const { deliveryToken } = useContext(AuthContext);
 
   useEffect(() => {
+
+    if(!deliveryToken)
+      return;
+
     fetchProfile();
-  }, []);
+  }, [deliveryToken]);
 
   const cancelEdit = () => {
     setIsEditing(false);
@@ -60,7 +66,7 @@ const DeliveryProfile = () => {
       
       const res= await axios.get(`${import.meta.env.VITE_API_URL}/api/delivery/profile`,{
         headers:{
-          Authorization: `Bearer ${localStorage.getItem("deliveryToken")}`,
+          Authorization: `Bearer ${deliveryToken}`,
         },
       })
 
@@ -73,8 +79,8 @@ const DeliveryProfile = () => {
         mobile: d.mobile || "9XXXXXXXXX",
         vehicle: d.vehicle || "BIKE",
         status: d.status,
-        currentLatitude: d.latitude || 17.385044,
-        currentLongitude: d.longitude || 78.486671
+        currentLatitude: d.currentLatitude || 17.385044,
+        currentLongitude: d.currentLongitude || 78.486671
       });
 
       setLoading(false);
@@ -85,11 +91,18 @@ const DeliveryProfile = () => {
   };
 
   const updateLocation = async () => {
-    if (navigator.geolocation) {
+    
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
+      return;
+    }
+
+    
       navigator.geolocation.getCurrentPosition(
         async (position) => {
           try {
             
+            // eslint-disable-next-line no-unused-vars
             const res = await axios.put(
               `${import.meta.env.VITE_API_URL}/api/delivery/updateLocation`,
               {
@@ -102,12 +115,14 @@ const DeliveryProfile = () => {
                 }
               }
             );
-            console.log(res);
-            setProfile({
-              ...profile,
-              currentLatitude: res.data.coords.latitude,
-              currentLongitude: res.data.coords.longitude
-            });
+
+            // console.log(res);
+            setProfile(prev => ({
+              ...prev,
+              currentLatitude: position.coords.latitude,
+              currentLongitude: position.coords.longitude
+            }));
+
             alert("Location updated successfully!");
           } catch (err) {
             alert("Failed to update location");
@@ -119,9 +134,7 @@ const DeliveryProfile = () => {
           console.error(error);
         }
       );
-    } else {
-      alert("Geolocation is not supported by your browser");
-    }
+    
   };
 
   if (loading) {

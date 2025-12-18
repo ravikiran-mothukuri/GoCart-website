@@ -11,7 +11,9 @@ export const AuthProvider = ({ children }) => {
   // keep state in sync on refresh
   useEffect(() => {
     const token = localStorage.getItem("deliveryToken");
-    setDeliveryToken(token);
+    if (token) {
+      setDeliveryToken(token);
+    }
   }, []);
 
   const login = (token) => {

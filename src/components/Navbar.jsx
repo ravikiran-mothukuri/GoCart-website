@@ -106,6 +106,12 @@ const Navbar = () => {
         )}
 
         {role === "USER" && (
+          <Link to="/orders" className="navbar-link">
+            📦 My Orders
+          </Link>
+        )}
+
+        {role === "USER" && (
           <Link to="/cart" className="navbar-link">
             Cart
           </Link>

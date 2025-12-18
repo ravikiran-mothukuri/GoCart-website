@@ -1,32 +1,44 @@
-import React, { useContext, useMemo} from "react";
+import { useContext, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { CartContext } from "./CartContext.jsx";
 import "../styles/user/addcart.css";
 
-// chenges made. 12: 22pm
 const AddCart = () => {
   const { cartItems, updateQuantity, removeFromCart, fetchCart } =
-  useContext(CartContext);
-
+    useContext(CartContext);
+  const navigate = useNavigate();
 
   const handlePlaceOrder = async () => {
-  const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/order/place`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
+    if (!token) {
+      alert("Please login to place an order");
+      navigate("/login");
+      return;
     }
-  });
 
-  if (res.ok) {
-    alert("Order placed successfully!");
-    fetchCart(); // clear cart after order
-  } else {
-    alert("Failed to place order");
-  }
-};
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/order/place`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
+      if (res.ok) {
+        alert("Order placed successfully! 🎉");
+        await fetchCart(); // clear cart after order
+        navigate("/orders"); // Navigate to orders page
+      } else {
+        const error = await res.json();
+        alert(error.message || "Failed to place order");
+      }
+    } catch (err) {
+      console.error("Error placing order:", err);
+      alert("Failed to place order. Please try again.");
+    }
+  };
 
   const usd = useMemo(
     () =>
@@ -38,27 +50,45 @@ const AddCart = () => {
     []
   );
 
-  const dec = async(item) => {
-    if(item.quantity==1)
+  const dec = async (item) => {
+    if (item.quantity === 1) {
       await removeFromCart(item.productId);
-    else
-      await updateQuantity(item.productId, item.quantity - 1)
+    } else {
+      await updateQuantity(item.productId, item.quantity - 1);
+    }
   };
 
-  const inc = async(item) => {
-    await updateQuantity(item.productId, item.quantity + 1)
+  const inc = async (item) => {
+    await updateQuantity(item.productId, item.quantity + 1);
   };
 
-  
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => {
+      return total + item.price * item.quantity;
+    }, 0);
+  };
 
   if (!cartItems || cartItems.length === 0) {
-    return <h2 className="empty-cart">🛒 Your cart is empty!</h2>;
+    return (
+      <div className="empty-cart-container">
+        <div className="empty-cart-content">
+          <div className="empty-cart-icon">🛒</div>
+          <h2 className="empty-cart-title">Your cart is empty!</h2>
+          <p className="empty-cart-text">
+            Looks like you haven't added anything to your cart yet.
+          </p>
+          <a href="/homepage" className="continue-shopping-btn">
+            Continue Shopping
+          </a>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="cart-container">
       <div className="cart-header">
-        <h2>Your Cart</h2>
+        <h2>Shopping Cart ({cartItems.length} items)</h2>
       </div>
 
       <div className="cart-grid">
@@ -76,11 +106,26 @@ const AddCart = () => {
                 </button>
                 <input
                   className="qty-input"
+                  type="number"
+                  min="1"
                   value={item.quantity}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (value > 0) {
+                      updateQuantity(item.productId, value);
+                    }
+                  }}
                 />
                 <button className="qty-btn" onClick={() => inc(item)}>
                   +
                 </button>
+              </div>
+
+              <div className="item-total">
+                <span>Subtotal:</span>
+                <span className="subtotal-price">
+                  {usd.format(item.price * item.quantity)}
+                </span>
               </div>
 
               <button
@@ -94,15 +139,28 @@ const AddCart = () => {
         ))}
       </div>
 
-      <div className="place-order-container">
-        <button
-          className="place-order-btn"
-          onClick={() => handlePlaceOrder()}
-        >
-          Place Order
-        </button>
+      {/* Order Summary */}
+      <div className="order-summary">
+        <div className="summary-card">
+          <h3>Order Summary</h3>
+          <div className="summary-row">
+            <span>Items ({cartItems.length}):</span>
+            <span>{usd.format(calculateTotal())}</span>
+          </div>
+          <div className="summary-row">
+            <span>Shipping:</span>
+            <span className="free-shipping">FREE</span>
+          </div>
+          <div className="summary-divider"></div>
+          <div className="summary-row total">
+            <span>Total:</span>
+            <span className="total-amount">{usd.format(calculateTotal())}</span>
+          </div>
+          <button className="place-order-btn" onClick={handlePlaceOrder}>
+            Place Order
+          </button>
+        </div>
       </div>
-
     </div>
   );
 };
