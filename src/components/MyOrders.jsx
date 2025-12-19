@@ -155,7 +155,7 @@ const MyOrders = () => {
                   <div className="info-item">
                     <span className="info-label">💰 Total Amount:</span>
                     <span className="info-value amount">
-                      ${order.totalAmount}
+                      ${order.price}
                     </span>
                   </div>
 
