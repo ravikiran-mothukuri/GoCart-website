@@ -60,7 +60,7 @@ const SearchResults = () => {
           <p className="no-results-text">
             Try different keywords or browse our categories
           </p>
-          <a href="/" className="back-home-btn">
+          <a href="/homepage" className="back-home-btn">
             Back to Home
           </a>
         </div>
