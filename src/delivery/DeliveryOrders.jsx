@@ -3,6 +3,7 @@ import axios from 'axios';
 import '../styles/delivery/delivery.css';
 import { useContext } from "react";
 import { AuthContext } from "../pages/AuthContext";
+import {useNavigate} from 'react-router-dom';
 
 
 const DeliveryOrders = () => {
@@ -11,6 +12,8 @@ const DeliveryOrders = () => {
   const [currentOrderId, setCurrentOrderId] = useState(null);
   // const deliveryToken = localStorage.getItem("deliveryToken");
   const { deliveryToken } = useContext(AuthContext);
+
+  const navigate= useNavigate();
 
 
   // Fetch orders from backend
@@ -83,7 +86,10 @@ const DeliveryOrders = () => {
         }
       );
       alert("Order marked as delivered!");
+      console.log(orderId);
       fetchOrders(); // Refresh orders immediately
+      navigate("/delivery/complete");
+      
     } catch (err) {
       alert("Failed to mark order as delivered");
       console.error(err);

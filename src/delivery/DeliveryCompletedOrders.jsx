@@ -31,7 +31,10 @@ const DeliveryCompletedOrders = () => {
         const delivered = res.data.orders.filter(
           order => order.status === 'DELIVERED'
         );
+
+        
         setCompletedOrders(delivered);
+        console.log(res.data.orders);
       }
     } catch (err) {
       console.error("Failed to fetch completed orders", err);
@@ -78,10 +81,10 @@ const DeliveryCompletedOrders = () => {
       <h2>✅ Completed Orders ({completedOrders.length})</h2>
 
       <div className="completed-orders-grid">
-        {completedOrders.map((order) => (
-          <div key={order.id} className="completed-order-card">
+        {completedOrders.map((order,key) => (
+          <div key={key} className="completed-order-card">
             <div className="order-header">
-              <span className="order-id">Order #{order.id}</span>
+              <span className="order-id">Order #{order.orderId}</span>
               <span className="status-badge delivered">
                 ✓ DELIVERED
               </span>
@@ -89,19 +92,19 @@ const DeliveryCompletedOrders = () => {
 
             <div className="order-details">
               <div className="detail-row">
-                <span className="detail-label">Customer:</span>
-                <span className="detail-value">{order.username}</span>
+                <span className="detail-label">Customer Name:</span>
+                <span className="detail-value">{order.customerName}</span>
               </div>
 
               <div className="detail-row">
                 <span className="detail-label">Total Amount:</span>
-                <span className="detail-value">₹{order.totalAmount}</span>
+                <span className="detail-value">${order.totalPrice}</span>
               </div>
 
               <div className="detail-row">
                 <span className="detail-label">Delivered On:</span>
                 <span className="detail-value">
-                  {formatDate(order.updatedAt || order.createdAt)}
+                  {formatDate(order.updatedAt || order.deliveredAt)}
                 </span>
               </div>
             </div>
