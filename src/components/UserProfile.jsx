@@ -2,6 +2,9 @@
 import { useEffect, useState, useRef} from "react";
 import "../styles/user/userprofile.css";
 
+import { useNavigate } from "react-router-dom";
+
+
 import mapboxgl from "mapbox-gl";
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 
@@ -16,10 +19,21 @@ import {
   Navigation,
 } from "lucide-react";
 
-//  ⭐ PUT YOUR MAPBOX TOKEN HERE
+
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOXGL_API;
 
 const UserProfile = () => {
+
+  const token = localStorage.getItem("token");
+  const navigate= useNavigate();
+
+  useEffect(() => {
+    if (!token) {
+      navigate("/login", { replace: true });
+    }
+  }, [token, navigate]);
+
+  
   const [isEditing, setIsEditing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -54,7 +68,7 @@ const UserProfile = () => {
     const fetchUser = async () => {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -85,57 +99,56 @@ const UserProfile = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ================================
-  // INITIALIZE MAPBOX
-  // ================================
+  
+
+
   useEffect(() => {
-    if (!mapContainer.current) return;
+  if (!mapContainer.current) return;
 
-    // Create map instance
-    mapRef.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: "mapbox://styles/mapbox/streets-v12",
+  // Create map ONCE
+  mapRef.current = new mapboxgl.Map({
+    container: mapContainer.current,
+    style: "mapbox://styles/mapbox/streets-v12",
+    center: [user.currentLongitude, user.currentLatitude],
+    zoom: 14,
+  });
+
+  mapRef.current.addControl(new mapboxgl.NavigationControl());
+
+  markerRef.current = new mapboxgl.Marker({ draggable: true })
+    .setLngLat([user.currentLongitude, user.currentLatitude])
+    .addTo(mapRef.current);
+
+  // ✅ RESIZE HANDLER (PUT IT HERE)
+  const handleResize = () => {
+    mapRef.current?.resize();
+  };
+
+  window.addEventListener("resize", handleResize);
+
+  return () => {
+    window.removeEventListener("resize", handleResize);
+    mapRef.current.remove();
+  };
+// eslint-disable-next-line react-hooks/exhaustive-deps
+}, []);
+
+
+  useEffect(() => {
+    if (!mapRef.current || !markerRef.current) return;
+
+    mapRef.current.flyTo({
       center: [user.currentLongitude, user.currentLatitude],
-      zoom: 14,
+      zoom: 15,
     });
 
-    // zoom controls
-    mapRef.current.addControl(new mapboxgl.NavigationControl());
+    markerRef.current.setLngLat([
+      user.currentLongitude,
+      user.currentLatitude,
+    ]);
+  }, [user.currentLatitude, user.currentLongitude]);
 
-    // AUTOCOMPLETE SEARCH BAR
-    const geocoder = new MapboxGeocoder({
-      accessToken: mapboxgl.accessToken,
-      mapboxgl,
-      placeholder: "Search address...",
-      marker: false,
-    });
-
-    mapRef.current.addControl(geocoder);
-
-    // selected result from autocomplete
-    geocoder.on("result", (e) => {
-      const { center, place_name } = e.result;
-      updateLocation(center[1], center[0], place_name);
-    });
-
-    // DRAGGABLE MARKER
-    markerRef.current = new mapboxgl.Marker({ draggable: true })
-      .setLngLat([user.currentLongitude, user.currentLatitude])
-      .addTo(mapRef.current);
-
-    // marker drag event
-    markerRef.current.on("dragend", () => {
-      const { lat, lng } = markerRef.current.getLngLat();
-      reverseGeocode(lat, lng);
-    });
-
-    return () => mapRef.current.remove();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ================================
   // UPDATE LOCATION IN STATE + UI
-  // ================================
   const updateLocation = (lat, lng, address = null) => {
     setUser((prev) => ({
       ...prev,
@@ -148,9 +161,8 @@ const UserProfile = () => {
     mapRef.current.flyTo({ center: [lng, lat], zoom: 15 });
   };
 
-  // ================================
+  
   // REVERSE GEOCODING — LAT/LNG → ADDRESS
-  // ================================
   const reverseGeocode = async (lat, lng) => {
     const res = await fetch(
       `https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${mapboxgl.accessToken}`
@@ -163,9 +175,8 @@ const UserProfile = () => {
     updateLocation(lat, lng, address);
   };
 
-  // ================================
+  
   // DETECT CURRENT LOCATION
-  // ================================
   const detectLocation = () => {
     if (!navigator.geolocation) {
       alert("Your browser does not support location access.");
@@ -183,9 +194,8 @@ const UserProfile = () => {
     );
   };
 
-  // ================================
+  
   // SAVE PROFILE
-  // ================================
   const saveProfile = async () => {
     const res = await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
       method: "PUT",
@@ -207,9 +217,7 @@ const UserProfile = () => {
     alert("Profile saved!");
   };
 
-  // ================================
-  // RENDER
-  // ================================
+  
   return (
   <div className="user-profile-wrapper">
     <div className="user-profile-container">
