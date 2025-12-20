@@ -122,9 +122,15 @@ const Navbar = () => {
             Sign Out
           </button>
         ) : (
-          <Link to="/login" className="navbar-link">
-            Login
-          </Link>
+          <div>
+            <Link to="/register" className="navbar-link">
+              Register
+            </Link>
+
+            <Link to="/login" className="navbar-link">
+              Login
+            </Link>
+          </div>
         )}
       </nav>
     </header>
