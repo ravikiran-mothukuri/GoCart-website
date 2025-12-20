@@ -34,7 +34,7 @@ const DeliveryCompletedOrders = () => {
 
         
         setCompletedOrders(delivered);
-        console.log(res.data.orders);
+        
       }
     } catch (err) {
       console.error("Failed to fetch completed orders", err);

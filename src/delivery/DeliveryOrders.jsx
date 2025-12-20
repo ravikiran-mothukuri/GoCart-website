@@ -96,6 +96,12 @@ const DeliveryOrders = () => {
     }
   };
 
+  const getUiStatus = (status) => {
+    if (status === 'PICKED_UP') return 'OUT_FOR_DELIVERY';
+    return status;
+  };
+
+
   const getStatusBadgeClass = (status) => {
     const statusMap = {
       'PLACED': 'placed',
@@ -136,7 +142,7 @@ const DeliveryOrders = () => {
         <div key={order.id} className="order-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <p style={{ margin: 0 }}><strong>Order ID:</strong> #{order.id}</p>
-            <span className={`status-badge ${getStatusBadgeClass(order.status)}`}>
+            <span className={`status-badge ${getStatusBadgeClass(getUiStatus(order.status))}`}>
               {order.status.replace(/_/g, ' ')}
             </span>
           </div>
@@ -146,6 +152,27 @@ const DeliveryOrders = () => {
           <p><strong>Items:</strong> {order.items}</p>
 
           {currentOrderId === order.id ? (
+              <button
+                className="btn"
+                onClick={() => handleMarkDelivered(order.id)}
+                style={{
+                  background: 'linear-gradient(135deg, #10b981, #059669)'
+                }}
+              >
+                ✓ Mark as Delivered
+              </button>
+            ) : (
+              <button
+                className="btn"
+                onClick={() => handleMarkPicked(order.id)}
+                disabled={currentOrderId !== null}
+              >
+                📦 Mark as Picked
+              </button>
+            )}
+
+
+          {/* {order.status === 'PICKED_UP' || order.status === 'OUT_FOR_DELIVERY' ? (
             <button 
               className="btn" 
               onClick={() => handleMarkDelivered(order.id)}
@@ -160,21 +187,25 @@ const DeliveryOrders = () => {
             <button 
               className="btn" 
               onClick={() => handleMarkPicked(order.id)}
-              disabled={currentOrderId !== null}
+              disabled={currentOrderId !== null && currentOrderId !== order.id}
+
               style={{ 
-                background: currentOrderId !== null 
-                  ? '#d1d5db' 
-                  : 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                boxShadow: currentOrderId !== null 
-                  ? 'none' 
-                  : '0 4px 12px rgba(59, 130, 246, 0.3)',
-                cursor: currentOrderId !== null ? 'not-allowed' : 'pointer',
-                opacity: currentOrderId !== null ? 0.6 : 1
+                background:
+                  currentOrderId !== null && currentOrderId !== order.id
+                    ? '#d1d5db'
+                    : 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                cursor:
+                  currentOrderId !== null && currentOrderId !== order.id
+                    ? 'not-allowed'
+                    : 'pointer',
+                opacity:
+                  currentOrderId !== null && currentOrderId !== order.id ? 0.6 : 1
+
               }}
             >
               📦 Mark as Picked
             </button>
-          )}
+          )} */}
         </div>
       ))}
     </div>

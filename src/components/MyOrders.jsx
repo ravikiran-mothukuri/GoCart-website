@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/user/myorders.css';
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('all'); // all, active, delivered
+  const [activeTab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchOrders();
@@ -24,7 +26,6 @@ const MyOrders = () => {
 
       if (res.ok) {
         const data = await res.json();
-        
         setOrders(data);
       }
     } catch (err) {
@@ -44,6 +45,22 @@ const MyOrders = () => {
     return statusMap[status] || '#6b7280';
   };
 
+  const getProgressWidth = (status) => {
+  switch (status) {
+    case 'PLACED':
+      return '25%';
+    case 'PICKED_UP':
+      return '50%';
+    case 'OUT_FOR_DELIVERY':
+      return '75%';
+    case 'DELIVERED':
+      return '100%';
+    default:
+      return '0%';
+  }
+};
+
+
   const getStatusText = (status) => {
     return status.replace(/_/g, ' ');
   };
@@ -57,6 +74,29 @@ const MyOrders = () => {
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  // const canTrackOrder = (status) => {
+  // return (
+  //     status === 'PLACED' ||
+  //     status === 'PICKED_UP' ||
+  //     status === 'OUT_FOR_DELIVERY'
+  //   );
+  // };
+
+  // const canTrackOrder = (status) => {
+  //   const s = status?.trim().toUpperCase();
+  //   return ['PLACED', 'PICKED_UP', 'OUT_FOR_DELIVERY'].includes(s);
+  // };
+
+  const canTrackOrder = (status) => {
+    const s = status?.trim().toUpperCase();
+    return ['PICKED_UP', 'OUT_FOR_DELIVERY'].includes(s);
+  };
+
+
+  const handleTrackOrder = (orderId) => {
+    navigate(`/track-order/${orderId}`);
   };
 
   const filteredOrders = orders.filter((order) => {
@@ -178,6 +218,18 @@ const MyOrders = () => {
                   )}
                 </div>
 
+                {/* Track Order Button */}
+                {canTrackOrder(order.status) && (
+                  <div style={{ marginTop: '20px' }}>
+                    <button
+                      className="track-order-btn"
+                      onClick={() => handleTrackOrder(order.id)}
+                    >
+                      🗺️ Track Order Live
+                    </button>
+                  </div>
+                )}
+
                 {/* Order Progress Tracker */}
                 {order.status !== 'DELIVERED' && (
                   <div className="order-progress">
@@ -185,14 +237,7 @@ const MyOrders = () => {
                       <div
                         className="progress-fill"
                         style={{
-                          width:
-                            order.status === 'PLACED'
-                              ? '25%'
-                              : order.status === 'PICKED_UP'
-                              ? '50%'
-                              : order.status === 'OUT_FOR_DELIVERY'
-                              ? '75%'
-                              : '100%',
+                          width: getProgressWidth(order.status)
                         }}
                       ></div>
                     </div>
