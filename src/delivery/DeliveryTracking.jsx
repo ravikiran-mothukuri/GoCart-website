@@ -1,351 +1,346 @@
-import { useState, useEffect, useRef, useContext } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { useState, useEffect, useRef, useContext } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { AuthContext } from "../pages/AuthContext";
-import '../styles/delivery/tracking.css';
+import "../styles/delivery/tracking.css";
 
-mapboxgl.accessToken = import.meta.env.VITE_MAPBOXGL_API;
+mapboxgl.accessToken = import.meta.env.VITE_MAPBOXGL_API || "";
 
+// eslint-disable-next-line react-refresh/only-export-components
 const DeliveryTracking = () => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const { deliveryToken } = useContext(AuthContext);
-  
+
   const [tracking, setTracking] = useState(null);
   const [loading, setLoading] = useState(true);
   const [distance, setDistance] = useState(null);
   const [duration, setDuration] = useState(null);
-  
+  const [showPhone, setShowPhone] = useState(false);
+  const [error, setError] = useState("");
+
+  const isPicked = tracking?.status === "PICKED_UP";
+
   const mapContainer = useRef(null);
-  const map = useRef(null);
+  const mapRef = useRef(null);
   const deliveryMarker = useRef(null);
   const customerMarker = useRef(null);
-  // eslint-disable-next-line no-unused-vars
-  const routeLayer = useRef(null);
+  const intervalRef = useRef(null);
 
-  // Fetch tracking data
-  const fetchTracking = async () => {
-    try {
-      const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/delivery/tracking/${orderId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${deliveryToken}`
-          }
-        }
-      );
-
-      if (res.data.success) {
-        const trackingData = res.data.tracking;
-        setTracking(trackingData);
-        
-        // Update map markers and route
-        if (map.current) {
-          updateMapWithTracking(trackingData);
-        }
-      }
-    } catch (err) {
-      console.error("Failed to fetch tracking", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Update delivery partner location
-  const updateLocation = async () => {
-    if (!navigator.geolocation) return;
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          await axios.put(
-            `${import.meta.env.VITE_API_URL}/api/delivery/tracking/update-location/${orderId}`,
-            {
-              lat: position.coords.latitude,
-              lon: position.coords.longitude
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${deliveryToken}`
-              }
-            }
-          );
-
-          // Refresh tracking data
-          fetchTracking();
-        } catch (err) {
-          console.error("Failed to update location", err);
-        }
-      },
-      (error) => {
-        console.error("Geolocation error:", error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-      }
-    );
-  };
-
-  // Initialize map
+  // 1) Fetch order tracking details
   useEffect(() => {
-    if (!mapContainer.current || !tracking) return;
-
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [tracking.deliveryPartnerLongitude, tracking.deliveryPartnerLatitude],
-      zoom: 13
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl());
-
-    // Add delivery partner marker (green)
-    const deliveryEl = document.createElement('div');
-    deliveryEl.className = 'delivery-marker';
-    deliveryEl.innerHTML = '🏍️';
-    
-    deliveryMarker.current = new mapboxgl.Marker({
-      element: deliveryEl,
-      anchor: 'center'
-    })
-      .setLngLat([tracking.deliveryPartnerLongitude, tracking.deliveryPartnerLatitude])
-      .addTo(map.current);
-
-    // Add customer marker (red)
-    const customerEl = document.createElement('div');
-    customerEl.className = 'customer-marker';
-    customerEl.innerHTML = '📍';
-    
-    customerMarker.current = new mapboxgl.Marker({
-      element: customerEl,
-      anchor: 'center'
-    })
-      .setLngLat([tracking.customerLongitude, tracking.customerLatitude])
-      .addTo(map.current);
-
-    // Fetch and draw route
-    map.current.on('load', () => {
-      updateMapWithTracking(tracking);
-    });
-
-    return () => {
-      if (map.current) {
-        map.current.remove();
+    const fetchTracking = async () => {
+      try {
+        if (!orderId || !deliveryToken) return;
+        const res = await axios.get(
+          `${import.meta.env.VITE_API_URL}/api/delivery/tracking/${orderId}`,
+          { headers: { Authorization: `Bearer ${deliveryToken}` } }
+        );
+        if (res.data?.success) {
+          setTracking(res.data.tracking);
+        } else {
+          setError("Unable to load tracking information.");
+        }
+      } catch (err) {
+        console.error("Failed to fetch tracking:", err);
+        setError("Failed to fetch tracking information.");
+      } finally {
+        setLoading(false);
       }
     };
-  }, [tracking]);
-
-  // Update map with new tracking data
-  const updateMapWithTracking = async (trackingData) => {
-    if (!map.current) return;
-
-    // Update marker positions
-    if (deliveryMarker.current) {
-      deliveryMarker.current.setLngLat([
-        trackingData.deliveryPartnerLongitude,
-        trackingData.deliveryPartnerLatitude
-      ]);
-    }
-
-    // Fetch route from Mapbox Directions API
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${trackingData.deliveryPartnerLongitude},${trackingData.deliveryPartnerLatitude};${trackingData.customerLongitude},${trackingData.customerLatitude}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
-
-    try {
-      const response = await fetch(url);
-      const data = await response.json();
-
-      if (data.routes && data.routes.length > 0) {
-        const route = data.routes[0];
-        
-        // Update distance and duration
-        setDistance((route.distance / 1000).toFixed(2)); // km
-        setDuration(Math.round(route.duration / 60)); // minutes
-
-        // Remove existing route layer
-        if (map.current.getLayer('route')) {
-          map.current.removeLayer('route');
-        }
-        if (map.current.getSource('route')) {
-          map.current.removeSource('route');
-        }
-
-        // Add route layer
-        map.current.addSource('route', {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            properties: {},
-            geometry: route.geometry
-          }
-        });
-
-        map.current.addLayer({
-          id: 'route',
-          type: 'line',
-          source: 'route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#3b82f6',
-            'line-width': 5,
-            'line-opacity': 0.75
-          }
-        });
-
-        // Fit map to show both markers and route
-        const bounds = new mapboxgl.LngLatBounds();
-        bounds.extend([trackingData.deliveryPartnerLongitude, trackingData.deliveryPartnerLatitude]);
-        bounds.extend([trackingData.customerLongitude, trackingData.customerLatitude]);
-        
-        map.current.fitBounds(bounds, {
-          padding: 100,
-          maxZoom: 15
-        });
-      }
-    } catch (err) {
-      console.error("Failed to fetch route", err);
-    }
-  };
-
-  // Auto-update location every 10 seconds
-  useEffect(() => {
-    if (!deliveryToken || !orderId) return;
 
     fetchTracking();
-    updateLocation();
-
-    const locationInterval = setInterval(() => {
-      updateLocation();
-    }, 10000); // Update every 10 seconds
-
-    const trackingInterval = setInterval(() => {
-      fetchTracking();
-    }, 10000);
-
-    return () => {
-      clearInterval(locationInterval);
-      clearInterval(trackingInterval);
-    };
   }, [orderId, deliveryToken]);
 
+  // 2) Initialize map ONCE when we have tracking
+  useEffect(() => {
+    if (!tracking || !mapContainer.current || mapRef.current) return;
+
+    const deliveryLng = tracking.deliveryPartnerLongitude ?? 77.5946;
+    const deliveryLat = tracking.deliveryPartnerLatitude ?? 12.9716;
+
+    const map = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [deliveryLng, deliveryLat],
+      zoom: 13,
+    });
+
+    mapRef.current = map;
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
+
+    deliveryMarker.current = new mapboxgl.Marker({ color: "#10b981" })
+      .setLngLat([deliveryLng, deliveryLat])
+      .setPopup(new mapboxgl.Popup().setHTML("<strong>📍 Your Location</strong>"))
+      .addTo(map);
+
+    if (
+      typeof tracking.customerLongitude === "number" &&
+      typeof tracking.customerLatitude === "number"
+    ) {
+      customerMarker.current = new mapboxgl.Marker({ color: "#ef4444" })
+        .setLngLat([tracking.customerLongitude, tracking.customerLatitude])
+        .setPopup(
+          new mapboxgl.Popup().setHTML(
+            `<strong>🏠 ${tracking.customerName || "Customer"}</strong><br/>${
+              tracking.customerAddress || ""
+            }`
+          )
+        )
+        .addTo(map);
+    }
+
+    map.on("load", () => {
+      drawRoute(deliveryLng, deliveryLat);
+    });
+
+    return () => {
+      map.remove();
+      mapRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tracking]);
+
+  // 3) GPS updates — only after picked up
+  useEffect(() => {
+    if (!deliveryToken || !orderId || !mapRef.current || !isPicked) return;
+
+    intervalRef.current = setInterval(() => {
+      if (!("geolocation" in navigator)) return;
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+
+          if (deliveryMarker.current) {
+            deliveryMarker.current.setLngLat([longitude, latitude]);
+          }
+          drawRoute(longitude, latitude);
+
+          axios
+            .put(
+              `${import.meta.env.VITE_API_URL}/api/delivery/tracking/update-location/${orderId}`,
+              { lat: latitude, lon: longitude },
+              { headers: { Authorization: `Bearer ${deliveryToken}` } }
+            )
+            .catch((err) => {
+              console.error("Failed to update location:", err);
+            });
+        },
+        (err) => console.error("Geolocation error:", err),
+        { enableHighAccuracy: true }
+      );
+    }, 3000);
+
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orderId, deliveryToken, isPicked]);
+
+  const openGoogleMaps = () => {
+    if (!tracking) return;
+    if (
+      typeof tracking.customerLatitude !== "number" ||
+      typeof tracking.customerLongitude !== "number"
+    ) {
+      alert("Customer location is not available.");
+      return;
+    }
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${tracking.customerLatitude},${tracking.customerLongitude}&travelmode=driving`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  // 4) Draw route
+  const drawRoute = async (lon, lat) => {
+    if (!mapRef.current || !tracking) return;
+    if (
+      typeof tracking.customerLongitude !== "number" ||
+      typeof tracking.customerLatitude !== "number"
+    )
+      return;
+
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${lon},${lat};${tracking.customerLongitude},${tracking.customerLatitude}?geometries=geojson&access_token=${mapboxgl.accessToken}`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      if (!data.routes?.length) return;
+
+      const route = data.routes[0];
+      setDistance((route.distance / 1000).toFixed(2));
+      setDuration(Math.round(route.duration / 60));
+
+      const routeGeoJSON = { type: "Feature", geometry: route.geometry };
+
+      const map = mapRef.current;
+      if (map.getSource("route")) {
+        map.getSource("route").setData(routeGeoJSON);
+      } else {
+        map.addSource("route", {
+          type: "geojson",
+          data: routeGeoJSON,
+        });
+        map.addLayer({
+          id: "route",
+          type: "line",
+          source: "route",
+          paint: {
+            "line-color": "#3b82f6",
+            "line-width": 6,
+          },
+        });
+      }
+    } catch (err) {
+      console.error("Failed to draw route:", err);
+    }
+  };
+
+  const handleCallCustomer = () => {
+    if (!tracking?.customerMobile) {
+      alert("Customer mobile number not available.");
+      return;
+    }
+    if (!showPhone) {
+      setShowPhone(true);
+    } else {
+      window.location.href = `tel:${tracking.customerMobile}`;
+    }
+  };
+
   const handleMarkDelivered = async () => {
+    if (!orderId || !deliveryToken) return;
+    const confirmDelivery = window.confirm("Mark this order as delivered?");
+    if (!confirmDelivery) return;
+
     try {
       await axios.put(
         `${import.meta.env.VITE_API_URL}/api/delivery/order/delivered/${orderId}`,
         {},
-        {
-          headers: {
-            Authorization: `Bearer ${deliveryToken}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${deliveryToken}` } }
       );
-      alert("Order marked as delivered!");
-      navigate("/delivery/orders");
+      navigate("/delivery/complete");
     } catch (err) {
-      alert("Failed to mark order as delivered");
-      console.error(err);
+      console.error("Failed to mark delivered:", err);
+      alert("Failed to mark as delivered. Please try again.");
     }
   };
 
   if (loading) {
     return (
-      <div className="tracking-page">
-        <div className="loading">
-          <div className="loading-spinner"></div>
-        </div>
+      <div className="loading-container">
+        <div className="spinner" />
+        <p>Loading tracking information...</p>
       </div>
     );
   }
 
-  if (!tracking) {
+  if (error || !tracking) {
     return (
-      <div className="tracking-page">
-        <p>Unable to load tracking information</p>
+      <div className="error-container">
+        <p className="error-message">{error || "Tracking not available."}</p>
       </div>
     );
   }
 
   return (
-    <div className="tracking-page">
-      <div className="tracking-header">
-        <button className="back-btn" onClick={() => navigate('/delivery/orders')}>
-          ← Back to Orders
+    <div className="delivery-tracking-page">
+      <div className="delivery-header">
+        <button className="btn-back" type="button" onClick={() => navigate(-1)}>
+          ← Back
         </button>
-        <h2>Order #{orderId} - Live Tracking</h2>
-      </div>
-
-      {/* Map Container */}
-      <div ref={mapContainer} className="tracking-map"></div>
-
-      {/* Tracking Info Cards */}
-      <div className="tracking-info-grid">
-        <div className="info-card">
-          <div className="info-icon">📍</div>
-          <div className="info-content">
-            <h3>Customer Details</h3>
-            <p><strong>{tracking.customerName}</strong></p>
-            <p>{tracking.customerAddress}</p>
-            <p>📞 {tracking.customerMobile}</p>
-          </div>
-        </div>
-
-        <div className="info-card">
-          <div className="info-icon">📊</div>
-          <div className="info-content">
-            <h3>Delivery Info</h3>
-            <p><strong>Distance:</strong> {distance ? `${distance} km` : 'Calculating...'}</p>
-            <p><strong>ETA:</strong> {duration ? `${duration} mins` : 'Calculating...'}</p>
-            <p><strong>Items:</strong> {tracking.itemCount}</p>
-          </div>
-        </div>
-
-        <div className="info-card">
-          <div className="info-icon">💰</div>
-          <div className="info-content">
-            <h3>Order Value</h3>
-            <p className="price">₹{tracking.totalPrice}</p>
-            <p><strong>Status:</strong> {tracking.status.replace(/_/g, ' ')}</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className="tracking-actions">
-        <button 
-          className="btn btn-call"
-          onClick={() => window.open(`tel:${tracking.customerMobile}`)}
-        >
-          📞 Call Customer
-        </button>
-        
-        <button 
-          className="btn btn-navigate"
-          onClick={() => window.open(
-            `https://www.google.com/maps/dir/?api=1&destination=${tracking.customerLatitude},${tracking.customerLongitude}`
+        <div className="header-info">
+          <h2>
+            🚚 Order #{orderId} — {tracking.status}
+          </h2>
+          {duration !== null && (
+            <div className="eta-badge">
+              <span className="eta-icon">⏱</span>
+              <span>{duration} mins</span>
+            </div>
           )}
-        >
-          🗺️ Open in Maps
-        </button>
+        </div>
+      </div>
 
-        <button 
-          className="btn btn-delivered"
+      <div ref={mapContainer} className="delivery-map" />
+
+      <div className="quick-stats">
+        <div className="stat-card">
+          <span className="stat-icon">📏</span>
+          <div className="stat-content">
+            <span className="stat-label">Distance</span>
+            <span className="stat-value">
+              {distance !== null ? `${distance} km` : "..."}
+            </span>
+          </div>
+        </div>
+        <div className="stat-card">
+          <span className="stat-icon">⏱</span>
+          <div className="stat-content">
+            <span className="stat-label">ETA</span>
+            <span className="stat-value">
+              {duration !== null ? `${duration} mins` : "..."}
+            </span>
+          </div>
+        </div>
+        {/* You can add two more stat cards if needed */}
+      </div>
+
+      <div className="customer-info-card">
+        <div className="customer-header">
+          <div className="customer-avatar" aria-hidden="true">
+            {tracking.customerName?.charAt(0).toUpperCase() || "C"}
+          </div>
+          <div className="customer-details">
+            <h3>{tracking.customerName || "Customer"}</h3>
+            <p className="customer-address">
+              <span aria-hidden="true">📍</span>
+              <span>{tracking.customerAddress || "Address not available"}</span>
+            </p>
+          </div>
+        </div>
+
+        <div className="customer-actions">
+          <button
+            className="action-btn call-btn"
+            type="button"
+            onClick={handleCallCustomer}
+          >
+            <span className="btn-icon" aria-hidden="true">
+              📞
+            </span>
+            {showPhone && tracking.customerMobile
+              ? tracking.customerMobile
+              : "Call Customer"}
+          </button>
+
+          <button
+            className="action-btn navigate-btn"
+            type="button"
+            onClick={openGoogleMaps}
+          >
+            <span className="btn-icon" aria-hidden="true">
+              🗺️
+            </span>
+            Open Maps
+          </button>
+        </div>
+      </div>
+
+      {isPicked && (
+        <button
+          className="btn-delivered"
+          type="button"
           onClick={handleMarkDelivered}
         >
-          ✅ Mark as Delivered
+          <span className="delivered-icon" aria-hidden="true">
+            ✅
+          </span>
+          Mark as Delivered
         </button>
-      </div>
-
-      {/* Live Update Indicator */}
-      <div className="live-indicator">
-        <span className="pulse"></span>
-        Live tracking - Updates every 10 seconds
-      </div>
+      )}
     </div>
   );
 };

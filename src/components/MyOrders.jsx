@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import '../styles/user/myorders.css';
 
@@ -7,6 +7,43 @@ const MyOrders = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const navigate = useNavigate();
+  const sseRefs = useRef([]);
+
+  useEffect(() => {
+    if (orders.length === 0) return;
+
+    const token = localStorage.getItem("token");
+    sseRefs.current = [];
+
+    orders.forEach(order => {
+      if (order.status !== 'DELIVERED') {
+        // Fixed SSE endpoint to match backend
+        const es = new EventSource(
+          `${import.meta.env.VITE_API_URL}/api/order/tracking/stream/${order.id}?token=${token}`
+        );
+
+        es.addEventListener("order-status", (e) => {
+          setOrders(prev =>
+            prev.map(o =>
+              o.id === order.id ? { ...o, status: e.data } : o
+            )
+          );
+        });
+
+        es.onerror = (err) => {
+          console.error(`SSE error for order ${order.id}:`, err);
+          es.close();
+        };
+
+        sseRefs.current.push(es);
+      }
+    });
+
+    return () => {
+      sseRefs.current.forEach(es => es.close());
+      sseRefs.current = [];
+    };
+  }, [orders]);
 
   useEffect(() => {
     fetchOrders();
@@ -39,27 +76,23 @@ const MyOrders = () => {
     const statusMap = {
       PLACED: '#fbbf24',
       PICKED_UP: '#3b82f6',
-      OUT_FOR_DELIVERY: '#8b5cf6',
       DELIVERED: '#10b981',
     };
     return statusMap[status] || '#6b7280';
   };
 
   const getProgressWidth = (status) => {
-  switch (status) {
-    case 'PLACED':
-      return '25%';
-    case 'PICKED_UP':
-      return '50%';
-    case 'OUT_FOR_DELIVERY':
-      return '75%';
-    case 'DELIVERED':
-      return '100%';
-    default:
-      return '0%';
-  }
-};
-
+    switch (status) {
+      case 'PLACED':
+        return '33%';
+      case 'PICKED_UP':
+        return '66%';
+      case 'DELIVERED':
+        return '100%';
+      default:
+        return '0%';
+    }
+  };
 
   const getStatusText = (status) => {
     return status.replace(/_/g, ' ');
@@ -76,24 +109,10 @@ const MyOrders = () => {
     });
   };
 
-  // const canTrackOrder = (status) => {
-  // return (
-  //     status === 'PLACED' ||
-  //     status === 'PICKED_UP' ||
-  //     status === 'OUT_FOR_DELIVERY'
-  //   );
-  // };
-
-  // const canTrackOrder = (status) => {
-  //   const s = status?.trim().toUpperCase();
-  //   return ['PLACED', 'PICKED_UP', 'OUT_FOR_DELIVERY'].includes(s);
-  // };
-
   const canTrackOrder = (status) => {
     const s = status?.trim().toUpperCase();
-    return ['PICKED_UP', 'OUT_FOR_DELIVERY'].includes(s);
+    return ['PICKED_UP'].includes(s);
   };
-
 
   const handleTrackOrder = (orderId) => {
     navigate(`/track-order/${orderId}`);
@@ -230,14 +249,15 @@ const MyOrders = () => {
                   </div>
                 )}
 
-                {/* Order Progress Tracker */}
+                {/* Order Progress Tracker - Removed OUT_FOR_DELIVERY */}
                 {order.status !== 'DELIVERED' && (
                   <div className="order-progress">
                     <div className="progress-bar">
                       <div
                         className="progress-fill"
                         style={{
-                          width: getProgressWidth(order.status)
+                          width: getProgressWidth(order.status),
+                          background: getStatusColor(order.status)
                         }}
                       ></div>
                     </div>
@@ -246,7 +266,7 @@ const MyOrders = () => {
                         className={`step ${
                           order.status === 'PLACED' ||
                           order.status === 'PICKED_UP' ||
-                          order.status === 'OUT_FOR_DELIVERY'
+                          order.status === 'DELIVERED'
                             ? 'completed'
                             : ''
                         }`}
@@ -257,23 +277,19 @@ const MyOrders = () => {
                       <div
                         className={`step ${
                           order.status === 'PICKED_UP' ||
-                          order.status === 'OUT_FOR_DELIVERY'
+                          order.status === 'DELIVERED'
                             ? 'completed'
                             : ''
                         }`}
                       >
-                        <div className="step-icon">🏪</div>
+                        <div className="step-icon">🚚</div>
                         <span>Picked Up</span>
                       </div>
                       <div
                         className={`step ${
-                          order.status === 'OUT_FOR_DELIVERY' ? 'completed' : ''
+                          order.status === 'DELIVERED' ? 'completed' : ''
                         }`}
                       >
-                        <div className="step-icon">🚚</div>
-                        <span>Out for Delivery</span>
-                      </div>
-                      <div className="step">
                         <div className="step-icon">✅</div>
                         <span>Delivered</span>
                       </div>

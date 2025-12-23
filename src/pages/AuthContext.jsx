@@ -21,6 +21,28 @@ export const AuthProvider = ({ children }) => {
     setDeliveryToken(token); // 🔥 triggers re-render
   };
 
+  useEffect(() => {
+    if (!deliveryToken) 
+      return;
+
+    const es = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/order/notifications?token=${deliveryToken}`
+    );
+
+    es.addEventListener("new-order", (e) => {
+      const order = JSON.parse(e.data);
+
+      alert(`📦 New Order Assigned! Order #${order.id}`);
+
+      
+      // navigate("/delivery/orders");
+    });
+
+    return () => es.close();
+  }, [deliveryToken]);
+
+
+
   const logout = () => {
     localStorage.removeItem("deliveryToken");
     setDeliveryToken(null); // 🔥 triggers re-render

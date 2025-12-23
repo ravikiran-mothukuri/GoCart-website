@@ -10,7 +10,7 @@ const DeliveryOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentOrderId, setCurrentOrderId] = useState(null);
-  // const deliveryToken = localStorage.getItem("deliveryToken");
+  
   const { deliveryToken } = useContext(AuthContext);
 
   const navigate= useNavigate();
@@ -44,16 +44,32 @@ const DeliveryOrders = () => {
     if(!deliveryToken)
       return;
     fetchOrders();
-
-    // Set up polling every 5 seconds for new orders
-    const pollInterval = setInterval(() => {
-      fetchOrders();
-    }, 5000); // Poll every 5 seconds
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(pollInterval);
   
   }, [deliveryToken]);
+
+  useEffect(() => {
+
+    if (!currentOrderId || !deliveryToken)
+      return;
+
+    
+
+    const es = new EventSource(
+      `${import.meta.env.VITE_API_URL}/api/order/${currentOrderId}?token=${deliveryToken}`
+    );
+
+
+    es.addEventListener("order-status", (e) => {
+      setOrders(prev =>
+        prev.map(o =>
+          o.id === currentOrderId ? { ...o, status: e.data } : o
+        )
+      );
+
+    });   
+
+    return () => es.close();
+  }, [currentOrderId,deliveryToken]);
 
   const handleMarkPicked = async (orderId) => {
     try {
@@ -74,6 +90,7 @@ const DeliveryOrders = () => {
     }
   };
 
+  // eslint-disable-next-line no-unused-vars
   const handleMarkDelivered = async (orderId) => {
     try {
       await axios.put(
@@ -86,9 +103,10 @@ const DeliveryOrders = () => {
         }
       );
       alert("Order marked as delivered!");
-      console.log(orderId);
-      fetchOrders(); // Refresh orders immediately
-      navigate("/delivery/complete");
+      
+      setTimeout(()=>{
+        navigate("/delivery/complete")
+      },2000);
       
     } catch (err) {
       alert("Failed to mark order as delivered");
@@ -151,61 +169,26 @@ const DeliveryOrders = () => {
           <p><strong>Address:</strong> {order.address}</p>
           <p><strong>Items:</strong> {order.items}</p>
 
-          {currentOrderId === order.id ? (
-              <button
-                className="btn"
-                onClick={() => handleMarkDelivered(order.id)}
-                style={{
-                  background: 'linear-gradient(135deg, #10b981, #059669)'
-                }}
-              >
-                ✓ Mark as Delivered
-              </button>
-            ) : (
-              <button
-                className="btn"
-                onClick={() => handleMarkPicked(order.id)}
-                disabled={currentOrderId !== null}
-              >
-                📦 Mark as Picked
-              </button>
-            )}
-
-
-          {/* {order.status === 'PICKED_UP' || order.status === 'OUT_FOR_DELIVERY' ? (
-            <button 
-              className="btn" 
-              onClick={() => handleMarkDelivered(order.id)}
-              style={{
-                background: 'linear-gradient(135deg, #10b981, #059669)',
-                boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-              }}
-            >
-              ✓ Mark as Delivered
-            </button>
-          ) : (
-            <button 
-              className="btn" 
+          {order.status === 'PLACED' && (
+            <button
+              className="btn"
               onClick={() => handleMarkPicked(order.id)}
-              disabled={currentOrderId !== null && currentOrderId !== order.id}
-
-              style={{ 
-                background:
-                  currentOrderId !== null && currentOrderId !== order.id
-                    ? '#d1d5db'
-                    : 'linear-gradient(135deg, #3b82f6, #2563eb)',
-                cursor:
-                  currentOrderId !== null && currentOrderId !== order.id
-                    ? 'not-allowed'
-                    : 'pointer',
-                opacity:
-                  currentOrderId !== null && currentOrderId !== order.id ? 0.6 : 1
-
-              }}
+              disabled={currentOrderId !== null}
             >
               📦 Mark as Picked
             </button>
-          )} */}
+          )}
+
+          {order.status === 'PICKED_UP' && (
+            <button
+              className="btn"
+              onClick={() => navigate(`/delivery/tracking/${order.id}`)}
+              style={{ background: '#2563eb' }}
+            >
+              🗺️ View Route
+            </button>
+          )}
+
         </div>
       ))}
     </div>
