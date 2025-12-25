@@ -4,7 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import "../styles/delivery/tracking.css";
+// import "../styles/delivery/tracking.css";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOXGL_API || "";
 
@@ -109,10 +109,13 @@ const UserOrderTracking = () => {
       drawRoute(deliveryLng, deliveryLat);
     });
 
+    // Custom Scooter Icon for Delivery Partner
+    const scooterEl = document.createElement('div');
+    scooterEl.innerHTML = '<div style="background-color: white; border-radius: 50%; padding: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 20px; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 2px solid #10b981;">🛵</div>';
+
     // Markers
     deliveryMarker.current = new mapboxgl.Marker({
-      color: "#10b981",
-      scale: 1.2,
+      element: scooterEl,
     })
       .setLngLat([deliveryLng, deliveryLat])
       .setPopup(
@@ -149,8 +152,7 @@ const UserOrderTracking = () => {
     if (!orderId || !token) return;
 
     const es = new EventSource(
-      `${
-        import.meta.env.VITE_API_URL
+      `${import.meta.env.VITE_API_URL
       }/api/order/tracking/stream/${orderId}?token=${token}`
     );
 
@@ -172,7 +174,7 @@ const UserOrderTracking = () => {
       );
     });
 
-    
+
 
     es.onerror = (err) => {
       console.error("SSE connection error:", err);
@@ -250,7 +252,7 @@ const UserOrderTracking = () => {
   const callDeliveryPartner = () => {
     if (tracking?.deliveryPartnerMobile) {
       window.location.href = `tel:${tracking.deliveryPartnerMobile}`;
-      
+
     } else {
       alert("Delivery partner contact not available.");
     }
@@ -296,198 +298,131 @@ const UserOrderTracking = () => {
   const statusInfo = getStatusInfo(tracking.status);
 
   return (
-    <div className="user-tracking-page">
-      <div className="user-tracking-header">
+    <div className="min-h-screen bg-gray-50 pb-24">
+      {/* Header */}
+      <div className="sticky top-0 z-10 flex items-center justify-between bg-white px-4 py-3 shadow-sm">
         <button
           type="button"
           onClick={() => navigate("/myorders")}
-          className="btn-back"
+          className="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-gray-900"
         >
           ← Back
         </button>
-        <div className="header-content">
-          <h2>Track Order #{orderId}</h2>
+        <div className="text-center">
+          <h2 className="text-sm font-bold text-gray-900">Track Order #{orderId}</h2>
           <div
-            className="status-pill"
+            className="mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold text-white shadow-sm"
             style={{ background: statusInfo.color }}
           >
             <span aria-hidden="true">{statusInfo.icon}</span>
             <span>{statusInfo.text}</span>
           </div>
         </div>
+        <div className="w-10"></div>
       </div>
 
-      {/* ✅ CALL BUTTON IN DELIVERY PARTNER CARD */}
-      {tracking.deliveryPersonName &&
-        tracking.status !== "DELIVERED" && (
-          <div className="delivery-info-card">
-            <div className="info-header">
-              <h3>🚚 Delivery Partner</h3>
-            </div>
+      <div ref={mapContainer} className="w-full bg-gray-200 rounded-xl" style={{ height: '50vh' }} />
 
-            <div className="info-grid">
-              <div className="info-item-inline">
-                <span className="info-icon" aria-hidden="true">
-                  👤
-                </span>
+      {/* Info Sheet / Content */}
+      <div className="-mt-6 relative z-20 rounded-t-3xl bg-white p-6 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+
+        {/* Delivery Partner Info */}
+        {tracking.deliveryPersonName && tracking.status !== "DELIVERED" && (
+          <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <h3 className="mb-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Delivery Partner</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                  <span className="text-xl">👤</span>
+                </div>
                 <div>
-                  <p className="info-label-small">Name</p>
-                  <p className="info-value-small">
-                    {tracking.deliveryPersonName}
-                  </p>
+                  <p className="font-bold text-gray-900">{tracking.deliveryPersonName}</p>
+                  <p className="text-xs text-gray-500">Your delivery hero</p>
                 </div>
               </div>
-
               {tracking.deliveryMobile && (
-                <div className="info-item-inline">
-                  <span className="info-icon">📞</span>
-                  <div>
-                    <p className="info-label-small">Contact</p>
-                    <button
-                      className="action-btn call-btn"
-                      type="button"
-                      onClick={callDeliveryPartner}
-                      style={{ marginTop: "6px" }}
-                    >
-                      Call Delivery Partner
-                    </button>
-                  </div>
-                </div>
+                <button
+                  onClick={callDeliveryPartner}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-green-50 text-green-600 hover:bg-green-100 transition-colors"
+                >
+                  <span className="text-xl">📞</span>
+                </button>
               )}
-
             </div>
+
+            {tracking.deliveryMobile && (
+              <button
+                className="mt-4 w-full rounded-xl bg-blue-600 py-3 font-bold text-white shadow-lg shadow-blue-500/20 active:scale-[0.98] transition-transform"
+                onClick={callDeliveryPartner}
+              >
+                Call Partner
+              </button>
+            )}
           </div>
         )}
 
-      <div ref={mapContainer} className="user-tracking-map" />
-
-      
-      {tracking.deliveryPartnerMobile && tracking.status !== "DELIVERED" && (
-        <div>
-          <button
-            type="button"
-            className="action-btn call-btn"
-            style={{ width: "100%" }}
-            onClick={callDeliveryPartner}
-          >
-            <span className="btn-icon" aria-hidden="true">
-              📞
-            </span>
-            Call Delivery Partner
-          </button>
-        </div>
-      )}
-
-      
-      <div className="timeline-container">
-        <h3 className="timeline-title">Order Journey</h3>
-        <div className="timeline">
-          <div
-            className={`timeline-item ${
-              tracking.status === "PLACED" ||
-              tracking.status === "PICKED_UP" ||
-              tracking.status === "DELIVERED"
-                ? "completed"
-                : "active"
-            }`}
-          >
-            <div className="timeline-marker">
-              <span className="timeline-icon" aria-hidden="true">
-                📦
-              </span>
-            </div>
-            <div className="timeline-content">
-              <h4>Order Placed</h4>
-              <p>Your order has been confirmed.</p>
-            </div>
-          </div>
-
-
-          <div
-            className={`timeline-item ${
-              tracking.status === "PICKED_UP" ||
-              tracking.status === "DELIVERED"
-                ? "completed"
-                : tracking.status === "PLACED"
-                ? "active"
-                : ""
-            }`}
-          >
-            <div className="timeline-marker">
-              <span className="timeline-icon" aria-hidden="true">
-                🏪
-              </span>
-            </div>
-            <div className="timeline-content">
-              <h4>Picked Up</h4>
-              <p>Delivery partner collected your order.</p>
-            </div>
-          </div>
-
-
-          <div
-            className={`timeline-item ${
-              tracking.status === "DELIVERED"
-                ? "completed"
-                : tracking.status === "PICKED_UP"
-                ? "active"
-                : ""
-            }`}
-          >
-            <div className="timeline-marker">
-              <span className="timeline-icon" aria-hidden="true">
-                ✅
-              </span>
-            </div>
-            <div className="timeline-content">
-              <h4>Delivered</h4>
-              <p>Order delivered to your location.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      {tracking.status === "DELIVERED" ? (
-        <div className="delivery-complete-card">
-          <div className="complete-icon" aria-hidden="true">
-            🎉
-          </div>
-          <h3>Order Delivered Successfully!</h3>
-          <p>Thank you for shopping with us.</p>
-        </div>
-      ) : (
-        <div className="delivery-info-card">
-          <div className="info-header">
-            <h3>📍 Delivery Details</h3>
-          </div>
-          <div className="info-grid">
-            <div className="info-item-inline">
-              <span className="info-icon" aria-hidden="true">
-                🏠
-              </span>
+        {/* Timeline */}
+        <div className="mb-8">
+          <h3 className="mb-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Order Journey</h3>
+          <div className="relative pl-10 border-l-2 border-gray-100 space-y-8">
+            {/* Placed */}
+            <div className={`relative ${["PLACED", "PICKED_UP", "DELIVERED"].includes(tracking.status) ? "opacity-100" : "opacity-40"}`}>
+              <div className="absolute -left-14 flex h-8 w-8 items-center justify-center rounded-full bg-yellow-100 text-yellow-600 border-2 border-white shadow-sm">
+                <span className="text-xs">📦</span>
+              </div>
               <div>
-                <p className="info-label-small">Delivery Address</p>
-                <p className="info-value-small">
-                  {tracking.customerAddress || "Address not available"}
-                </p>
+                <h4 className="font-bold text-gray-900">Order Placed</h4>
+                <p className="text-sm text-gray-500">Your order has been confirmed.</p>
               </div>
             </div>
-            {tracking.customerName && (
-              <div className="info-item-inline">
-                <span className="info-icon" aria-hidden="true">
-                  👤
-                </span>
-                <div>
-                  <p className="info-label-small">Customer Name</p>
-                  <p className="info-value-small">{tracking.customerName}</p>
-                </div>
+
+            {/* Picked Up */}
+            <div className={`relative ${["PICKED_UP", "DELIVERED"].includes(tracking.status) ? "opacity-100" : "opacity-40"}`}>
+              <div className="absolute -left-14 flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 border-2 border-white shadow-sm">
+                <span className="text-xs">🏪</span>
               </div>
-            )}
+              <div>
+                <h4 className="font-bold text-gray-900">Picked Up</h4>
+                <p className="text-sm text-gray-500">Partner collected your order.</p>
+              </div>
+            </div>
+
+            {/* Delivered */}
+            <div className={`relative ${tracking.status === "DELIVERED" ? "opacity-100" : "opacity-40"}`}>
+              <div className="absolute -left-14 flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 border-2 border-white shadow-sm">
+                <span className="text-xs">✅</span>
+              </div>
+              <div>
+                <h4 className="font-bold text-gray-900">Delivered</h4>
+                <p className="text-sm text-gray-500">Order delivered to your location.</p>
+              </div>
+            </div>
           </div>
         </div>
-      )}
 
+        {/* Delivery Details or Success Message */}
+        {tracking.status === "DELIVERED" ? (
+          <div className="rounded-2xl bg-green-50 p-6 text-center shadow-inner">
+            <div className="mb-2 inline-flex rounded-full bg-green-100 p-3 text-2xl">🎉</div>
+            <h3 className="text-lg font-bold text-green-800">Order Delivered!</h3>
+            <p className="text-green-600">Thank you for shopping with us.</p>
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+            <h3 className="mb-3 text-xs font-bold text-gray-500 uppercase tracking-wider">Delivery Details</h3>
+            <div className="flex items-start gap-3">
+              <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-600">
+                <span className="text-xs">🏠</span>
+              </div>
+              <div>
+                <p className="text-xs font-medium text-gray-500">Delivery Address</p>
+                <p className="font-medium text-gray-900">{tracking.customerAddress || "Address not available"}</p>
+                {tracking.customerName && <p className="text-sm text-gray-500 mt-1">{tracking.customerName}</p>}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

@@ -4,7 +4,7 @@ import axios from "axios";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { AuthContext } from "../pages/AuthContext";
-import "../styles/delivery/tracking.css";
+import { ArrowLeft, Clock, Ruler, Navigation, Map, Phone, CheckCircle, Smartphone } from 'lucide-react';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOXGL_API || "";
 
@@ -71,7 +71,11 @@ const DeliveryTracking = () => {
     mapRef.current = map;
     map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-    deliveryMarker.current = new mapboxgl.Marker({ color: "#10b981" })
+    // Custom Scooter Icon for Delivery Partner
+    const scooterEl = document.createElement('div');
+    scooterEl.innerHTML = '<div style="background-color: white; border-radius: 50%; padding: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); font-size: 20px; display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; border: 2px solid #10b981;">🛵</div>';
+
+    deliveryMarker.current = new mapboxgl.Marker({ element: scooterEl })
       .setLngLat([deliveryLng, deliveryLat])
       .setPopup(new mapboxgl.Popup().setHTML("<strong>📍 Your Location</strong>"))
       .addTo(map);
@@ -84,8 +88,7 @@ const DeliveryTracking = () => {
         .setLngLat([tracking.customerLongitude, tracking.customerLatitude])
         .setPopup(
           new mapboxgl.Popup().setHTML(
-            `<strong>🏠 ${tracking.customerName || "Customer"}</strong><br/>${
-              tracking.customerAddress || ""
+            `<strong>🏠 ${tracking.customerName || "Customer"}</strong><br/>${tracking.customerAddress || ""
             }`
           )
         )
@@ -140,18 +143,30 @@ const DeliveryTracking = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, deliveryToken, isPicked]);
 
+  // const openGoogleMaps = () => {
+  //   if (!tracking) return;
+  //   if (
+  //     typeof tracking.customerLatitude !== "number" ||
+  //     typeof tracking.customerLongitude !== "number"
+  //   ) {
+  //     alert("Customer location is not available.");
+  //     return;
+  //   }
+  //   const url = `https://www.google.com/maps/dir/?api=1&destination=${tracking.customerLatitude},${tracking.customerLongitude}&travelmode=driving`;
+  //   window.open(url, "_blank", "noopener,noreferrer");
+  // };
+
   const openGoogleMaps = () => {
-    if (!tracking) return;
-    if (
-      typeof tracking.customerLatitude !== "number" ||
-      typeof tracking.customerLongitude !== "number"
-    ) {
-      alert("Customer location is not available.");
-      return;
-    }
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${tracking.customerLatitude},${tracking.customerLongitude}&travelmode=driving`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    const { customerLatitude, customerLongitude } = tracking;
+
+    const url = `https://www.google.com/maps/dir/?api=1
+      &origin=${tracking.deliveryPartnerLatitude},${tracking.deliveryPartnerLongitude}
+      &destination=${customerLatitude},${customerLongitude}
+      &travelmode=driving`;
+
+    window.open(url.replace(/\s+/g, ""), "_blank");
   };
+
 
   // 4) Draw route
   const drawRoute = async (lon, lat) => {
@@ -230,117 +245,120 @@ const DeliveryTracking = () => {
 
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="spinner" />
-        <p>Loading tracking information...</p>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
       </div>
     );
   }
 
   if (error || !tracking) {
     return (
-      <div className="error-container">
-        <p className="error-message">{error || "Tracking not available."}</p>
+      <div className="flex h-screen flex-col items-center justify-center bg-gray-50 p-4 text-center">
+        <div className="mb-4 rounded-full bg-red-100 p-4 text-red-600">
+          <Smartphone size={32} />
+        </div>
+        <p className="text-gray-900 font-medium">{error || "Tracking not available."}</p>
       </div>
     );
   }
 
   return (
-    <div className="delivery-tracking-page">
-      <div className="delivery-header">
-        <button className="btn-back" type="button" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
-        <div className="header-info">
-          <h2>
-            🚚 Order #{orderId} — {tracking.status}
-          </h2>
-          {duration !== null && (
-            <div className="eta-badge">
-              <span className="eta-icon">⏱</span>
-              <span>{duration} mins</span>
-            </div>
-          )}
-        </div>
-      </div>
-
-      <div ref={mapContainer} className="delivery-map" />
-
-      <div className="quick-stats">
-        <div className="stat-card">
-          <span className="stat-icon">📏</span>
-          <div className="stat-content">
-            <span className="stat-label">Distance</span>
-            <span className="stat-value">
-              {distance !== null ? `${distance} km` : "..."}
-            </span>
-          </div>
-        </div>
-        <div className="stat-card">
-          <span className="stat-icon">⏱</span>
-          <div className="stat-content">
-            <span className="stat-label">ETA</span>
-            <span className="stat-value">
-              {duration !== null ? `${duration} mins` : "..."}
-            </span>
-          </div>
-        </div>
-        {/* You can add two more stat cards if needed */}
-      </div>
-
-      <div className="customer-info-card">
-        <div className="customer-header">
-          <div className="customer-avatar" aria-hidden="true">
-            {tracking.customerName?.charAt(0).toUpperCase() || "C"}
-          </div>
-          <div className="customer-details">
-            <h3>{tracking.customerName || "Customer"}</h3>
-            <p className="customer-address">
-              <span aria-hidden="true">📍</span>
-              <span>{tracking.customerAddress || "Address not available"}</span>
-            </p>
-          </div>
-        </div>
-
-        <div className="customer-actions">
-          <button
-            className="action-btn call-btn"
-            type="button"
-            onClick={handleCallCustomer}
-          >
-            <span className="btn-icon" aria-hidden="true">
-              📞
-            </span>
-            {showPhone && tracking.customerMobile
-              ? tracking.customerMobile
-              : "Call Customer"}
-          </button>
-
-          <button
-            className="action-btn navigate-btn"
-            type="button"
-            onClick={openGoogleMaps}
-          >
-            <span className="btn-icon" aria-hidden="true">
-              🗺️
-            </span>
-            Open Maps
-          </button>
-        </div>
-      </div>
-
-      {isPicked && (
+    <div className="relative min-h-screen bg-gray-50 pb-24">
+      {/* Header */}
+      <div className="sticky top-0 z-10 flex items-center justify-between bg-white px-4 py-3 shadow-sm">
         <button
-          className="btn-delivered"
+          className="flex items-center gap-1 text-sm font-semibold text-gray-600 hover:text-gray-900"
           type="button"
-          onClick={handleMarkDelivered}
+          onClick={() => navigate(-1)}
         >
-          <span className="delivered-icon" aria-hidden="true">
-            ✅
-          </span>
-          Mark as Delivered
+          <ArrowLeft size={18} /> Back
         </button>
-      )}
+        <div className="text-center">
+          <h2 className="text-sm font-bold text-gray-900">Order #{orderId}</h2>
+          <span className="text-xs font-semibold text-blue-600">{tracking.status.replace(/_/g, ' ')}</span>
+        </div>
+        {duration !== null ? (
+          <div className="flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-bold text-blue-700">
+            <Clock size={12} /> {duration} min
+          </div>
+        ) : (
+          <div className="w-10"></div>
+        )}
+      </div>
+
+      {/* Map Container */}
+      <div ref={mapContainer} className="h-[50vh] w-full bg-gray-200" />
+
+      {/* Info Sheet */}
+      <div className="-mt-6 relative z-20 rounded-t-3xl bg-white p-6 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+        {/* Quick Stats */}
+        <div className="mb-6 grid grid-cols-2 gap-4">
+          <div className="flex items-center gap-3 rounded-xl bg-gray-50 p-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm text-blue-600">
+              <Ruler size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500">Distance</p>
+              <p className="font-bold text-gray-900">{distance !== null ? `${distance} km` : "..."}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 rounded-xl bg-gray-50 p-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm text-purple-600">
+              <Clock size={18} />
+            </div>
+            <div>
+              <p className="text-xs font-medium text-gray-500">ETA</p>
+              <p className="font-bold text-gray-900">{duration !== null ? `${duration} min` : "..."}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Customer Info */}
+        <div className="mb-6 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 font-bold text-white shadow-md">
+              {tracking.customerName?.charAt(0).toUpperCase() || "C"}
+            </div>
+            <div className="flex-1 overflow-hidden">
+              <h3 className="font-bold text-gray-900 truncate">{tracking.customerName || "Customer"}</h3>
+              <p className="flex items-start gap-1 text-xs text-gray-500">
+                <Map size={12} className="mt-0.5 shrink-0" />
+                <span className="line-clamp-2">{tracking.customerAddress || "Address not available"}</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <button
+              className="flex items-center justify-center gap-2 rounded-xl bg-green-50 py-2.5 text-sm font-bold text-green-700 transition-colors hover:bg-green-100"
+              type="button"
+              onClick={handleCallCustomer}
+            >
+              <Phone size={16} />
+              {showPhone && tracking.customerMobile ? tracking.customerMobile : "Call"}
+            </button>
+
+            <button
+              className="flex items-center justify-center gap-2 rounded-xl bg-blue-50 py-2.5 text-sm font-bold text-blue-700 transition-colors hover:bg-blue-100"
+              type="button"
+              onClick={openGoogleMaps}
+            >
+              <Navigation size={16} /> Maps
+            </button>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        {isPicked && (
+          <button
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 py-3.5 font-bold text-white shadow-lg shadow-green-500/20 transition-transform active:scale-[0.98]"
+            type="button"
+            onClick={handleMarkDelivered}
+          >
+            <CheckCircle size={20} /> Mark as Delivered
+          </button>
+        )}
+      </div>
     </div>
   );
 };

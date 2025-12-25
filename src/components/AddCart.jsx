@@ -1,42 +1,50 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { CartContext } from "./CartContext.jsx";
-import "../styles/user/addcart.css";
 
 const AddCart = () => {
   const { cartItems, updateQuantity, removeFromCart, fetchCart } =
     useContext(CartContext);
   const navigate = useNavigate();
+  const [message, setMessage] = useState(null); // { type: 'success' | 'error', text: string }
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  };
 
   const handlePlaceOrder = async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      alert("Please login to place an order");
-      navigate("/login");
+      showMessage("error", "Please login to place an order");
+      setTimeout(() => navigate("/login"), 1500);
       return;
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/order/place`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/order/place`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (res.ok) {
-        alert("Order placed successfully! 🎉");
+        showMessage("success", "Order placed successfully! 🎉");
         await fetchCart(); // clear cart after order
-        navigate("/orders"); // Navigate to orders page
+        setTimeout(() => navigate("/orders"), 1500);
       } else {
         const error = await res.json();
-        alert(error.message || "Failed to place order");
+        showMessage("error", error.message || "Failed to place order");
       }
     } catch (err) {
       console.error("Error placing order:", err);
-      alert("Failed to place order. Please try again.");
+      showMessage("error", "Failed to place order. Please try again.");
     }
   };
 
@@ -70,14 +78,19 @@ const AddCart = () => {
 
   if (!cartItems || cartItems.length === 0) {
     return (
-      <div className="empty-cart-container">
-        <div className="empty-cart-content">
-          <div className="empty-cart-icon">🛒</div>
-          <h2 className="empty-cart-title">Your cart is empty!</h2>
-          <p className="empty-cart-text">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 text-center">
+        <div className="rounded-2xl bg-white p-12 shadow-xl">
+          <div className="mb-6 text-6xl">🛒</div>
+          <h2 className="mb-4 text-3xl font-extrabold text-gray-900">
+            Your cart is empty!
+          </h2>
+          <p className="mb-8 text-gray-500">
             Looks like you haven't added anything to your cart yet.
           </p>
-          <a href="/homepage" className="continue-shopping-btn">
+          <a
+            href="/homepage"
+            className="inline-block rounded-xl bg-gradient-to-br from-green-500 to-green-600 px-8 py-3 font-bold text-white shadow-lg transition-transform hover:scale-105"
+          >
             Continue Shopping
           </a>
         </div>
@@ -86,79 +99,135 @@ const AddCart = () => {
   }
 
   return (
-    <div className="cart-container">
-      <div className="cart-header">
-        <h2>Shopping Cart ({cartItems.length} items)</h2>
-      </div>
+    <div className="min-h-screen bg-gray-50 px-4 py-12 lg:px-8">
+      {/* Toast Notification */}
+      {message && (
+        <div className="fixed top-24 right-4 z-50 animate-bounce rounded-xl bg-gray-900/90 px-6 py-3 text-white shadow-xl backdrop-blur-sm">
+          {message.text}
+        </div>
+      )}
 
-      <div className="cart-grid">
-        {cartItems.map((item) => (
-          <article key={item.cartItemId} className="cart-card">
-            <img src={item.imageUrl} alt={item.name} />
+      <h2 className="mb-8 text-center text-3xl font-extrabold text-gray-900">
+        Shopping Cart ({cartItems.length} items)
+      </h2>
 
-            <div className="cart-info">
-              <h3 className="cart-title">{item.name}</h3>
-              <p className="cart-price">{usd.format(item.price)}</p>
-
-              <div className="qty-row">
-                <button className="qty-btn" onClick={() => dec(item)}>
-                  -
-                </button>
-                <input
-                  className="qty-input"
-                  type="number"
-                  min="1"
-                  value={item.quantity}
-                  onChange={(e) => {
-                    const value = parseInt(e.target.value);
-                    if (value > 0) {
-                      updateQuantity(item.productId, value);
-                    }
-                  }}
+      <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-3">
+        {/* Cart Items List */}
+        <div className="space-y-6 lg:col-span-2">
+          {cartItems.map((item) => (
+            <article
+              key={item.cartItemId}
+              className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-sm transition-all hover:shadow-md sm:flex-row"
+            >
+              <div className="h-32 w-32 shrink-0 rounded-xl bg-gray-100 p-2">
+                <img
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="h-full w-full object-contain"
                 />
-                <button className="qty-btn" onClick={() => inc(item)}>
-                  +
-                </button>
               </div>
 
-              <div className="item-total">
-                <span>Subtotal:</span>
-                <span className="subtotal-price">
-                  {usd.format(item.price * item.quantity)}
+              <div className="flex flex-1 flex-col justify-between">
+                <div>
+                  <div className="flex justify-between">
+                    <h3 className="text-lg font-bold text-gray-900">
+                      {item.name}
+                    </h3>
+                    <p className="text-lg font-bold text-green-600">
+                      {usd.format(item.price)}
+                    </p>
+                  </div>
+                  <p className="mt-1 text-sm text-gray-500">
+                    Typically ships in 3-4 weeks
+                  </p>
+                </div>
+
+                <div className="mt-4 flex items-center justify-between">
+                  {/* Quantity Controls */}
+                  <div className="flex items-center rounded-lg border border-gray-200">
+                    <button
+                      className="px-3 py-1 font-bold text-gray-600 hover:bg-gray-100"
+                      onClick={() => dec(item)}
+                    >
+                      -
+                    </button>
+                    <input
+                      className="w-12 border-x border-gray-200 py-1 text-center text-sm font-semibold focus:outline-none"
+                      type="number"
+                      min="1"
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (value > 0) {
+                          updateQuantity(item.productId, value);
+                        }
+                      }}
+                    />
+                    <button
+                      className="px-3 py-1 font-bold text-gray-600 hover:bg-gray-100"
+                      onClick={() => inc(item)}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <span className="block text-xs text-gray-500">
+                        Subtotal
+                      </span>
+                      <span className="font-bold text-gray-900">
+                        {usd.format(item.price * item.quantity)}
+                      </span>
+                    </div>
+                    <button
+                      className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-100"
+                      onClick={() => removeFromCart(item.productId)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        {/* Order Summary */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-24 rounded-2xl bg-white p-8 shadow-xl">
+            <h3 className="mb-6 text-xl font-bold text-gray-900">
+              Order Summary
+            </h3>
+
+            <div className="space-y-4">
+              <div className="flex justify-between text-gray-600">
+                <span>Items ({cartItems.length})</span>
+                <span className="font-medium">
+                  {usd.format(calculateTotal())}
                 </span>
               </div>
-
-              <button
-                className="remove-btn"
-                onClick={() => removeFromCart(item.productId)}
-              >
-                Remove
-              </button>
+              <div className="flex justify-between text-gray-600">
+                <span>Shipping</span>
+                <span className="font-bold text-green-600">FREE</span>
+              </div>
+              <div className="border-t border-gray-100 pt-4">
+                <div className="flex justify-between text-lg font-bold text-gray-900">
+                  <span>Total</span>
+                  <span className="text-green-600">
+                    {usd.format(calculateTotal())}
+                  </span>
+                </div>
+              </div>
             </div>
-          </article>
-        ))}
-      </div>
 
-      {/* Order Summary */}
-      <div className="order-summary">
-        <div className="summary-card">
-          <h3>Order Summary</h3>
-          <div className="summary-row">
-            <span>Items ({cartItems.length}):</span>
-            <span>{usd.format(calculateTotal())}</span>
+            <button
+              className="mt-8 w-full rounded-xl bg-gradient-to-br from-green-500 to-green-600 px-6 py-4 font-bold text-white shadow-lg transition-all hover:scale-[1.02] hover:shadow-green-500/30 active:scale-[0.98]"
+              onClick={handlePlaceOrder}
+            >
+              Place Order
+            </button>
           </div>
-          <div className="summary-row">
-            <span>Shipping:</span>
-            <span className="free-shipping">FREE</span>
-          </div>
-          <div className="summary-divider"></div>
-          <div className="summary-row total">
-            <span>Total:</span>
-            <span className="total-amount">{usd.format(calculateTotal())}</span>
-          </div>
-          <button className="place-order-btn" onClick={handlePlaceOrder}>
-            Place Order
-          </button>
         </div>
       </div>
     </div>

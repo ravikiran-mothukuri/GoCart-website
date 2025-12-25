@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from "../pages/AuthContext";
-import "../styles/delivery/delivery.css";
+import { Calendar, BarChart2, Gem, TrendingUp, IndianRupee } from 'lucide-react';
 
 const DeliveryEarnings = () => {
   const [earnings, setEarnings] = useState(null);
@@ -12,13 +12,9 @@ const DeliveryEarnings = () => {
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/delivery/earnings`,
-        {
-          headers: {
-            Authorization: `Bearer ${deliveryToken}`
-          }
-        }
+        { headers: { Authorization: `Bearer ${deliveryToken}` } }
       );
-      
+
       if (res.data.success) {
         setEarnings(res.data.earnings);
       }
@@ -33,7 +29,6 @@ const DeliveryEarnings = () => {
     if (!deliveryToken) return;
     fetchEarnings();
 
-    // Refresh earnings every 30 seconds
     const interval = setInterval(() => {
       fetchEarnings();
     }, 30000);
@@ -43,66 +38,78 @@ const DeliveryEarnings = () => {
 
   if (loading) {
     return (
-      <div className="delivery-page">
-        <div className="loading">
-          <div className="loading-spinner"></div>
-        </div>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
       </div>
     );
   }
 
   if (!earnings) {
     return (
-      <div className="delivery-page">
-        <h2>💰 Earnings</h2>
-        <p>Unable to load earnings data</p>
+      <div className="flex h-screen flex-col items-center justify-center bg-gray-50 p-4">
+        <h2 className="text-xl font-bold text-gray-900">💰 Earnings</h2>
+        <p className="text-gray-500">Unable to load earnings data</p>
       </div>
     );
   }
 
   return (
-    <div className="delivery-page">
-      <h2>💰 Earnings Dashboard</h2>
+    <div className="min-h-screen bg-gray-50 px-4 py-8 lg:px-8">
+      <h2 className="mb-8 text-2xl font-bold text-gray-900">💰 Earnings Dashboard</h2>
 
-      <div className="earnings-grid">
-        <div className="earnings-card today">
-          <div className="earnings-icon">📅</div>
-          <h3>Today</h3>
-          <p className="earnings-amount">₹{earnings.todayEarnings.toFixed(2)}</p>
-          <p className="earnings-detail">{earnings.todayDeliveries} deliveries</p>
+      <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+            <Calendar size={24} />
+          </div>
+          <h3 className="text-sm font-medium text-gray-500">Today</h3>
+          <p className="mt-2 text-2xl font-bold text-gray-900">₹{earnings.todayEarnings.toFixed(2)}</p>
+          <p className="text-xs text-gray-500">{earnings.todayDeliveries} deliveries</p>
         </div>
 
-        <div className="earnings-card week">
-          <div className="earnings-icon">📊</div>
-          <h3>This Week</h3>
-          <p className="earnings-amount">₹{earnings.weekEarnings.toFixed(2)}</p>
-          <p className="earnings-detail">{earnings.weekDeliveries} deliveries</p>
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
+            <BarChart2 size={24} />
+          </div>
+          <h3 className="text-sm font-medium text-gray-500">This Week</h3>
+          <p className="mt-2 text-2xl font-bold text-gray-900">₹{earnings.weekEarnings.toFixed(2)}</p>
+          <p className="text-xs text-gray-500">{earnings.weekDeliveries} deliveries</p>
         </div>
 
-        <div className="earnings-card total">
-          <div className="earnings-icon">💎</div>
-          <h3>Total Earnings</h3>
-          <p className="earnings-amount">₹{earnings.totalEarnings.toFixed(2)}</p>
-          <p className="earnings-detail">{earnings.totalDeliveries} deliveries</p>
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600">
+            <Gem size={24} />
+          </div>
+          <h3 className="text-sm font-medium text-gray-500">Total Earnings</h3>
+          <p className="mt-2 text-2xl font-bold text-gray-900">₹{earnings.totalEarnings.toFixed(2)}</p>
+          <p className="text-xs text-gray-500">{earnings.totalDeliveries} deliveries</p>
         </div>
 
-        <div className="earnings-card average">
-          <div className="earnings-icon">📈</div>
-          <h3>Average Order</h3>
-          <p className="earnings-amount">₹{earnings.averageOrderValue.toFixed(2)}</p>
-          <p className="earnings-detail">per delivery</p>
+        <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+          <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+            <TrendingUp size={24} />
+          </div>
+          <h3 className="text-sm font-medium text-gray-500">Average Order</h3>
+          <p className="mt-2 text-2xl font-bold text-gray-900">₹{earnings.averageOrderValue.toFixed(2)}</p>
+          <p className="text-xs text-gray-500">per delivery</p>
         </div>
       </div>
 
-      <div className="earnings-stats">
-        <h3>Performance Metrics</h3>
-        <div className="stat-row">
-          <span>Daily Average:</span>
-          <strong>₹{(earnings.totalEarnings / Math.max(1, earnings.totalDeliveries / 7)).toFixed(2)}</strong>
-        </div>
-        <div className="stat-row">
-          <span>Weekly Target Progress:</span>
-          <strong>{((earnings.weekEarnings / 5000) * 100).toFixed(1)}%</strong>
+      <div className="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-gray-100">
+        <h3 className="mb-6 text-lg font-bold text-gray-900">Performance Metrics</h3>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+            <span className="text-sm font-medium text-gray-600">Daily Average</span>
+            <strong className="text-lg font-bold text-gray-900">
+              ₹{(earnings.totalEarnings / Math.max(1, earnings.totalDeliveries / 7)).toFixed(2)}
+            </strong>
+          </div>
+          <div className="flex items-center justify-between rounded-xl bg-gray-50 p-4">
+            <span className="text-sm font-medium text-gray-600">Weekly Target Progress</span>
+            <strong className="text-lg font-bold text-green-600">
+              {((earnings.weekEarnings / 5000) * 100).toFixed(1)}%
+            </strong>
+          </div>
         </div>
       </div>
     </div>

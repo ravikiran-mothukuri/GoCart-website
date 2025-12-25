@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/user/myorders.css';
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -10,6 +9,11 @@ const MyOrders = () => {
   const sseRefs = useRef([]);
 
   useEffect(() => {
+    fetchOrders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     if (orders.length === 0) return;
 
     const token = localStorage.getItem("token");
@@ -17,7 +21,6 @@ const MyOrders = () => {
 
     orders.forEach(order => {
       if (order.status !== 'DELIVERED') {
-        // Fixed SSE endpoint to match backend
         const es = new EventSource(
           `${import.meta.env.VITE_API_URL}/api/order/tracking/stream/${order.id}?token=${token}`
         );
@@ -45,13 +48,11 @@ const MyOrders = () => {
     };
   }, [orders]);
 
-  useEffect(() => {
-    fetchOrders();
-  }, []);
 
   const fetchOrders = async () => {
     try {
       const token = localStorage.getItem('token');
+      // FIXED: Correct endpoint
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/order/user/orders`,
         {
@@ -95,10 +96,11 @@ const MyOrders = () => {
   };
 
   const getStatusText = (status) => {
-    return status.replace(/_/g, ' ');
+    return status ? status.replace(/_/g, ' ') : '';
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return '';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-IN', {
       day: 'numeric',
@@ -127,23 +129,27 @@ const MyOrders = () => {
 
   if (loading) {
     return (
-      <div className="orders-page">
-        <div className="loading-container">
-          <div className="loading-spinner"></div>
-          <p>Loading your orders...</p>
-        </div>
+      <div className="flex h-screen items-center justify-center bg-gray-50">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-500 border-t-transparent"></div>
       </div>
     );
   }
 
   if (orders.length === 0) {
     return (
-      <div className="orders-page">
-        <div className="empty-orders">
-          <div className="empty-icon">📦</div>
-          <h2>No Orders Yet</h2>
-          <p>Looks like you haven't placed any orders yet.</p>
-          <a href="/homepage" className="shop-now-btn">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 px-4 text-center">
+        <div className="rounded-2xl bg-white p-12 shadow-xl">
+          <div className="mb-6 text-6xl">📦</div>
+          <h2 className="mb-4 text-3xl font-extrabold text-gray-900">
+            No Orders Yet
+          </h2>
+          <p className="mb-8 text-gray-500">
+            Looks like you haven't placed any orders yet.
+          </p>
+          <a
+            href="/homepage"
+            className="inline-block rounded-xl bg-gradient-to-br from-green-500 to-green-600 px-8 py-3 font-bold text-white shadow-lg transition-transform hover:scale-105"
+          >
             Start Shopping
           </a>
         </div>
@@ -152,150 +158,136 @@ const MyOrders = () => {
   }
 
   return (
-    <div className="orders-page">
-      <div className="orders-header">
-        <h1>My Orders</h1>
-        <p className="orders-subtitle">Track and manage your orders</p>
+    <div className="min-h-screen bg-gray-50 px-4 py-8 lg:px-8">
+      <div className="mb-8 text-center">
+        <h1 className="text-3xl font-extrabold text-gray-900">My Orders</h1>
+        <p className="text-gray-500">Track and manage your orders</p>
       </div>
 
       {/* Filter Tabs */}
-      <div className="order-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`}
-          onClick={() => setActiveTab('all')}
-        >
-          All Orders ({orders.length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'active' ? 'active' : ''}`}
-          onClick={() => setActiveTab('active')}
-        >
-          Active ({orders.filter((o) => o.status !== 'DELIVERED').length})
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'delivered' ? 'active' : ''}`}
-          onClick={() => setActiveTab('delivered')}
-        >
-          Delivered ({orders.filter((o) => o.status === 'DELIVERED').length})
-        </button>
+      <div className="mb-8 flex justify-center gap-4">
+        {[
+          { id: 'all', label: 'All Orders' },
+          { id: 'active', label: 'Active' },
+          { id: 'delivered', label: 'Delivered' }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            className={`rounded-full px-6 py-2 text-sm font-semibold transition-all ${activeTab === tab.id
+              ? 'bg-green-600 text-white shadow-lg shadow-green-500/30'
+              : 'bg-white text-gray-600 hover:bg-gray-50'
+              }`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label} {tab.id === 'all' ? `(${orders.length})` :
+              tab.id === 'active' ? `(${orders.filter(o => o.status !== 'DELIVERED').length})` :
+                `(${orders.filter(o => o.status === 'DELIVERED').length})`}
+          </button>
+        ))}
       </div>
 
       {/* Orders List */}
-      <div className="orders-container">
+      <div className="mx-auto max-w-4xl space-y-6">
         {filteredOrders.length === 0 ? (
-          <div className="no-orders-found">
-            <p>No orders found in this category</p>
+          <div className="rounded-2xl bg-white p-8 text-center shadow-sm">
+            <p className="text-gray-500">No orders found in this category</p>
           </div>
         ) : (
           filteredOrders.map((order) => (
-            <div key={order.id} className="order-card">
-              <div className="order-card-header">
-                <div className="order-id-section">
-                  <span className="order-label">Order ID:</span>
-                  <span className="order-id">#{order.id}</span>
+            <div key={order.id} className="overflow-hidden rounded-2xl bg-white shadow-sm transition-all hover:shadow-md">
+              <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 bg-gray-50/50 p-4">
+                <div className="flex flex-col gap-1">
+                  <span className="font-mono text-xs font-bold uppercase text-gray-400">
+                    Order ID
+                  </span>
+                  <span className="font-mono text-sm font-medium text-gray-900">
+                    #{order.id}
+                  </span>
                 </div>
                 <div
-                  className="order-status-badge"
+                  className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm"
                   style={{ background: getStatusColor(order.status) }}
                 >
                   {getStatusText(order.status)}
                 </div>
               </div>
 
-              <div className="order-card-body">
-                <div className="order-info-grid">
-                  <div className="info-item">
-                    <span className="info-label">📅 Ordered On:</span>
-                    <span className="info-value">
-                      {formatDate(order.createdAt)}
-                    </span>
+              <div className="p-4 sm:p-6">
+                <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  <div>
+                    <span className="block text-xs font-medium text-gray-500">Ordered On</span>
+                    <span className="font-semibold text-gray-900">{formatDate(order.createdAt)}</span>
                   </div>
-
-                  <div className="info-item">
-                    <span className="info-label">💰 Total Amount:</span>
-                    <span className="info-value amount">
-                      ${order.price}
-                    </span>
+                  <div>
+                    <span className="block text-xs font-medium text-gray-500">Total Amount</span>
+                    <span className="font-bold text-green-600 outline outline-1 outline-green-200 bg-green-50 px-2 py-0.5 rounded text-sm inline-block mt-1">${order.price}</span>
                   </div>
-
                   {order.deliveryPartnerId && (
-                    <div className="info-item">
-                      <span className="info-label">🚚 Delivery Partner:</span>
-                      <span className="info-value">
-                        Partner #{order.deliveryPartnerId}
-                      </span>
-                    </div>
-                  )}
-
-                  {order.status === 'DELIVERED' && order.updatedAt && (
-                    <div className="info-item">
-                      <span className="info-label">✅ Delivered On:</span>
-                      <span className="info-value">
-                        {formatDate(order.updatedAt)}
-                      </span>
+                    <div>
+                      <span className="block text-xs font-medium text-gray-500">Delivery Partner</span>
+                      <span className="font-semibold text-gray-900">Partner #{order.deliveryPartnerId}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Track Order Button */}
-                {canTrackOrder(order.status) && (
-                  <div style={{ marginTop: '20px' }}>
-                    <button
-                      className="track-order-btn"
-                      onClick={() => handleTrackOrder(order.id)}
-                    >
-                      🗺️ Track Order Live
-                    </button>
+                {/* Order Items */}
+                {/* Use optional chaining and default empty array in case structure differs */}
+                {(order.orderItems || []).length > 0 && (
+                  <div className="divide-y divide-gray-100 rounded-xl bg-gray-50 p-4 mb-6">
+                    {(order.orderItems || []).map((item, index) => (
+                      <div key={item.id || index} className="flex gap-4 py-3 first:pt-0 last:pb-0">
+                        <div className="h-16 w-16 shrink-0 rounded-lg bg-white p-2 shadow-sm">
+                          {item.product?.imageUrl && (
+                            <img
+                              src={item.product.imageUrl}
+                              alt={item.product.name}
+                              className="h-full w-full object-contain"
+                            />
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-bold text-gray-900 text-sm line-clamp-1">{item.product?.name || 'Product'}</h4>
+                          <div className="mt-1 flex justify-between items-center">
+                            <span className="text-xs text-gray-500">Qty: {item.quantity}</span>
+                            <span className="text-sm font-bold text-gray-900">${item.price}</span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
 
-                {/* Order Progress Tracker - Removed OUT_FOR_DELIVERY */}
+
+                {/* Progress Bar */}
                 {order.status !== 'DELIVERED' && (
-                  <div className="order-progress">
-                    <div className="progress-bar">
+                  <div className="mb-6">
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-100">
                       <div
-                        className="progress-fill"
+                        className="h-full transition-all duration-500 ease-out"
                         style={{
                           width: getProgressWidth(order.status),
                           background: getStatusColor(order.status)
                         }}
-                      ></div>
+                      />
                     </div>
-                    <div className="progress-steps">
-                      <div
-                        className={`step ${
-                          order.status === 'PLACED' ||
-                          order.status === 'PICKED_UP' ||
-                          order.status === 'DELIVERED'
-                            ? 'completed'
-                            : ''
-                        }`}
-                      >
-                        <div className="step-icon">📦</div>
-                        <span>Placed</span>
-                      </div>
-                      <div
-                        className={`step ${
-                          order.status === 'PICKED_UP' ||
-                          order.status === 'DELIVERED'
-                            ? 'completed'
-                            : ''
-                        }`}
-                      >
-                        <div className="step-icon">🚚</div>
-                        <span>Picked Up</span>
-                      </div>
-                      <div
-                        className={`step ${
-                          order.status === 'DELIVERED' ? 'completed' : ''
-                        }`}
-                      >
-                        <div className="step-icon">✅</div>
-                        <span>Delivered</span>
-                      </div>
+                    <div className="mt-2 flex justify-between text-xs font-medium text-gray-500">
+                      <span className={order.status === 'PLACED' || order.status === 'PICKED_UP' || order.status === 'DELIVERED' ? 'text-green-600 font-bold' : ''}>Placed</span>
+                      <span className={order.status === 'PICKED_UP' || order.status === 'DELIVERED' ? 'text-blue-600 font-bold' : ''}>Picked Up</span>
+                      <span className={order.status === 'DELIVERED' ? 'text-green-600 font-bold' : ''}>Delivered</span>
                     </div>
                   </div>
                 )}
+
+                {/* Action Buttons */}
+                {canTrackOrder(order.status) && (
+                  <button
+                    onClick={() => handleTrackOrder(order.id)}
+                    className="w-full rounded-xl bg-blue-600 px-4 py-3 font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:bg-blue-700 hover:shadow-blue-500/30"
+                  >
+                    🗺️ Track Live Order
+                  </button>
+                )}
+
               </div>
             </div>
           ))

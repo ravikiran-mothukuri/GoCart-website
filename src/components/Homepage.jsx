@@ -1,22 +1,21 @@
+// Homepage.jsx
 import { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
-// import axios from 'axios';
 import CartContext from "./CartContext";
-import "../styles/user/homepage.css";
-
-
 
 const Homepage = () => {
   const [products, setProducts] = useState([]);
-  const { addToCart } = useContext(CartContext); 
+  const [message, setMessage] = useState(null);
+  const { addToCart } = useContext(CartContext);
   const role = localStorage.getItem("role");
   const token = localStorage.getItem("token");
-
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/products`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/api/products`
+        );
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
         setProducts(data);
@@ -27,44 +26,50 @@ const Homepage = () => {
     fetchProducts();
   }, []);
 
-  
-  const handleAddToCart= async (product)=>{
-    const token = localStorage.getItem("token");
+  const showMessage = (msg) => {
+    setMessage(msg);
+    setTimeout(() => setMessage(null), 3000);
+  };
 
+  const handleAddToCart = async (product) => {
     if (!token) {
-      alert("Please login to add items to cart.");
+      showMessage("Please login to add items to cart.");
       return;
     }
 
     const inStock = product.quantity <= 0;
     if (inStock) {
-      alert("This item is out of stock.");
+      showMessage("This item is out of stock.");
       return;
     }
-    
-    
-    const sucess= await addToCart(product);
-    if(sucess)
-      alert(`${product.name} added to cart!`);
 
-  }
+    const success = await addToCart(product);
+    if (success) {
+      showMessage(`${product.name} added to cart!`);
+    }
+  };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    if (!window.confirm("Are you sure you want to delete this product?"))
+      return;
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/product/${id}`, {
-        method: "DELETE",
-        headers: {
-        Authorization: `Bearer ${token}`,
-  },
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/product/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
       if (response.ok) {
         setProducts(products.filter((product) => product.id !== id));
-        alert("Product deleted successfully!");
+        showMessage("Product deleted successfully!");
       } else {
         console.error("Failed to delete product");
+        showMessage("Failed to delete product");
       }
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -72,74 +77,110 @@ const Homepage = () => {
   };
 
   return (
-    <div className="homepage-container">
-      <h1>Available Products</h1>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 px-4 py-8 text-gray-800">
+      {message && (
+        <div className="fixed top-24 right-4 z-50 animate-bounce rounded-xl bg-gray-900/90 px-6 py-3 text-white shadow-xl backdrop-blur-sm sm:top-24">
+          {message}
+        </div>
+      )}
+
+      <h1 className="mb-8 text-center text-3xl font-bold text-gray-800 lg:text-4xl">
+        Available Products
+      </h1>
 
       {products.length === 0 ? (
-        <p className="empty">No products available.</p>
+        <p className="py-12 text-center text-lg text-gray-500">
+          No products available.
+        </p>
       ) : (
-        <div className="product-grid">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products.map((product) => (
-            <div className="product-card" key={product.id} tabIndex={0}>
-              
+            <div
+              className="group relative flex flex-col rounded-2xl bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-green-500/20"
+              key={product.id}
+              tabIndex={0}
+            >
               <img
-                src={product.imageUrl} 
+                src={product.imageUrl}
                 alt={product.name}
-                className="product-image"
+                className="mb-4 h-60 w-full rounded-xl bg-gray-100 object-cover"
               />
 
-              <h3>{product.name}</h3>
-              <p><strong>Brand:</strong> {product.brand}</p>
-              <p><strong>Category:</strong> {product.category}</p>
-              <div className="divider"></div>
-              <p><strong>Price:</strong> ${product.price}</p>
-              <p>
-                <strong>Stock:</strong>{" "}
+              <h3 className="mb-2 text-xl font-semibold leading-tight text-gray-900">
+                {product.name}
+              </h3>
+              <p className="mb-1 text-sm text-gray-500">
+                <strong className="font-medium text-gray-700">Brand:</strong>{" "}
+                {product.brand}
+              </p>
+              <p className="mb-3 text-sm text-gray-500">
+                <strong className="font-medium text-gray-700">Category:</strong>{" "}
+                {product.category}
+              </p>
+
+              <div className="my-4 h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+
+              <p className="mb-2 text-2xl font-bold text-green-600">
+                ${product.price}
+              </p>
+
+              <p className="mb-2 text-sm text-gray-500">
+                <strong className="font-medium text-gray-700">Stock:</strong>{" "}
                 <span
-                  className={
-                    product.quantity > 10
-                      ? "in-stock"
+                  className={`font-semibold ${product.quantity > 10
+                      ? "text-green-600"
                       : product.quantity > 0
-                      ? "low-stock"
-                      : "out-of-stock"
-                  }
+                        ? "text-orange-600"
+                        : "text-red-600"
+                    }`}
                 >
                   {product.quantity > 0 ? product.quantity : "Out of stock"}
                 </span>
               </p>
-              <p><strong>Release Date:</strong> {product.releasedate}</p>
-              <p className="description"><strong>Description:</strong> {product.description}</p>
+              <p className="mb-2 text-sm text-gray-500">
+                <strong className="font-medium text-gray-700">Release Date:</strong>{" "}
+                {product.releasedate}
+              </p>
+              <p className="mb-4 line-clamp-3 overflow-hidden text-sm leading-relaxed text-gray-500">
+                <strong className="font-medium text-gray-700">Description:</strong>{" "}
+                {product.description}
+              </p>
 
-              <div className="cta">
+              <div className="mt-auto flex flex-wrap items-center gap-3">
                 <button
-                  className="btn btn-primary"
-                  
-                  onClick={()=> handleAddToCart(product)}
+                  className="flex-1 rounded-xl bg-gradient-to-br from-green-500 to-green-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-green-500/30 transition-all hover:-translate-y-[1px] hover:from-green-600 hover:to-green-700 hover:shadow-green-500/40 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:from-gray-300 disabled:to-gray-400 disabled:shadow-none"
+                  onClick={() => handleAddToCart(product)}
                   disabled={product.quantity === 0}
                 >
                   Add to Cart
                 </button>
 
-                <Link to={`/product/${product.id}`}>
-                  <button className="btn btn-ghost">View Details</button>
+                <Link to={`/product/${product.id}`} className="flex-1">
+                  <button className="w-full rounded-xl border-2 border-green-500 bg-white px-5 py-[10px] text-sm font-semibold text-green-600 transition-all hover:bg-green-50 hover:text-green-700">
+                    Details
+                  </button>
                 </Link>
 
-                {role==="ADMIN" && (
-
-                <button
-                  className="icon-btn btn-danger"
-                  onClick={() => handleDelete(product.id)}
-                  aria-label={`Delete ${product.name}`}
-                  title="Delete"
-                >
-                  <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-                    <path
-                      fill="currentColor"
-                      d="M6 7h12l-1 14H7L6 7zm5-3h2l1 1h4v2H4V5h4l1-1z"
-                    />
-                  </svg>
-                </button>
-              )}
+                {role === "ADMIN" && (
+                  <button
+                    className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-red-100 text-red-600 transition-all hover:scale-105 hover:bg-red-200 hover:text-red-700"
+                    onClick={() => handleDelete(product.id)}
+                    aria-label={`Delete ${product.name}`}
+                    title="Delete"
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      width="20"
+                      height="20"
+                      aria-hidden="true"
+                    >
+                      <path
+                        fill="currentColor"
+                        d="M6 7h12l-1 14H7L6 7zm5-3h2l1 1h4v2H4V5h4l1-1z"
+                      />
+                    </svg>
+                  </button>
+                )}
               </div>
             </div>
           ))}
