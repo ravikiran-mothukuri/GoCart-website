@@ -162,30 +162,44 @@ const UserProfile = () => {
   };
 
   const detectLocation = () => {
+
     if (!navigator.geolocation) {
       showMessage("error", "Geolocation is not supported by your browser");
       return;
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        updateLocation(pos.coords.latitude, pos.coords.longitude);
-        reverseGeocode(pos.coords.latitude, pos.coords.longitude);
-      },
-      (err) => {
-        console.error("Geolocation error:", err);
-        let errorMsg = "Unable to detect location";
-        if (err.code === 1) errorMsg = "Location permission denied";
-        else if (err.code === 2) errorMsg = "Location unavailable";
-        else if (err.code === 3) errorMsg = "Location request timed out";
-        showMessage("error", errorMsg);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      }
-    );
+    const getLocation = (highAccuracy) => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          updateLocation(pos.coords.latitude, pos.coords.longitude);
+          reverseGeocode(pos.coords.latitude, pos.coords.longitude);
+        },
+        (err) => {
+          console.error(`Geolocation error (High Accuracy: ${highAccuracy}):`, err);
+
+          // If high accuracy failed, try low accuracy
+          if (highAccuracy && (err.code === 2 || err.code === 3)) {
+            console.log("Retrying with low accuracy...");
+            getLocation(false);
+            return;
+          }
+
+          let errorMsg = "Unable to detect location";
+          if (err.code === 1) errorMsg = "Location permission denied. Please allow location access.";
+          else if (err.code === 2) errorMsg = "Location unavailable. Ensure Wi-Fi is ON.";
+          else if (err.code === 3) errorMsg = "Location request timed out. Please try again.";
+
+          showMessage("error", errorMsg);
+        },
+        {
+          enableHighAccuracy: highAccuracy,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    };
+
+    getLocation(true);
   };
 
   const saveProfile = async () => {
