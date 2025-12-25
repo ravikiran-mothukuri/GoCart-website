@@ -54,13 +54,17 @@ const UserProfile = () => {
           }
         );
 
-        const text= await res.text;
+        if (!res.ok) {
+          throw new Error(`Server error: ${res.status}`);
+        }
+
+        const text = await res.text();
 
         if (!text) {
           console.error("Empty response from server");
           return;
         }
-        
+
         const data = JSON.parse(text);
 
         setUser({
