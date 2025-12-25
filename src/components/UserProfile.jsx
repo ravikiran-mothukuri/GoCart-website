@@ -2,6 +2,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import mapboxgl from "mapbox-gl";
+import axios from "axios";
 import { MapPin, User, Navigation, Save, X, Edit2 } from "lucide-react";
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOXGL_API;
@@ -47,25 +48,14 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const res = await fetch(
+        const res = await axios.get(
           `${import.meta.env.VITE_API_URL}/api/user/profile`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
-        if (!res.ok) {
-          throw new Error(`Server error: ${res.status}`);
-        }
-
-        const text = await res.text();
-
-        if (!text) {
-          console.error("Empty response from server");
-          return;
-        }
-
-        const data = JSON.parse(text);
+        const data = res.data;
 
         setUser({
           firstname: data.firstname || "",
@@ -85,12 +75,13 @@ const UserProfile = () => {
 
         setProfileLoaded(true);
       } catch (err) {
-        console.error(err);
+        console.error("User profile fetch failed:", err);
       }
     };
 
     fetchUser();
   }, [token]);
+
 
   // ================= MAP INIT =================
   useEffect(() => {
@@ -204,14 +195,14 @@ const UserProfile = () => {
 
   const saveProfile = async () => {
     try {
-      await fetch(`${import.meta.env.VITE_API_URL}/api/user/profile`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(user),
-      });
+
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/api/user/profile`,
+        user,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      
 
       setIsEditing(false);
       showMessage("success", "Profile updated successfully!");
