@@ -242,7 +242,7 @@ const UserOrderTracking = () => {
         duration: 800,
       });
 
-      console.log("Tracking payload:", tracking);
+      
     } catch (err) {
       console.error("Route drawing error:", err);
     }
@@ -250,8 +250,8 @@ const UserOrderTracking = () => {
 
   // ✅ CALL DELIVERY PARTNER FUNCTION
   const callDeliveryPartner = () => {
-    if (tracking?.deliveryPartnerMobile) {
-      window.location.href = `tel:${tracking.deliveryPartnerMobile}`;
+    if (tracking?.deliveryMobile) {
+      window.location.href = `tel:${tracking.deliveryMobile}`;
 
     } else {
       alert("Delivery partner contact not available.");
