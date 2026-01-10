@@ -72,7 +72,7 @@ const DeliveryNavbar = () => {
         </span>
       </div>
 
-      <div className="order-3 flex md:order-none w-full md:w-auto flex-wrap items-center justify-center gap-4 overflow-x-auto md:gap-8 pb-2 md:pb-0">
+      <div className="order-3 flex w-full flex-wrap items-center justify-center gap-3 overflow-x-auto pb-2 md:order-none md:w-auto md:gap-8 md:pb-0">
         <Link className={isActive("/delivery/dashboard")} to="/delivery/dashboard">
           Dashboard
         </Link>
@@ -90,22 +90,24 @@ const DeliveryNavbar = () => {
         </Link>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <button
-          className={`rounded-full px-6 py-2 text-xs font-bold uppercase tracking-wider transition-all shadow-lg ${active
-              ? "bg-green-500 text-white shadow-green-500/40 hover:bg-green-600 hover:shadow-green-500/50"
-              : "bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700"
+          className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all shadow-lg sm:px-6 ${active
+            ? "bg-green-500 text-white shadow-green-500/40 hover:bg-green-600 hover:shadow-green-500/50"
+            : "bg-gray-800 text-gray-400 border border-gray-700 hover:bg-gray-700"
             }`}
           onClick={handleStatus}
         >
-          {active ? "Active" : "Offline"}
+          <span className="hidden sm:inline">{active ? "Active" : "Offline"}</span>
+          <span className="sm:hidden">{active ? "🟢" : "⚫"}</span>
         </button>
 
         <button
-          className="rounded-xl bg-red-500/10 px-4 py-2 text-sm font-medium text-red-400 transition-all hover:bg-red-500/20 hover:text-red-300"
+          className="rounded-xl bg-red-500/10 px-3 py-2 text-xs font-medium text-red-400 transition-all hover:bg-red-500/20 hover:text-red-300 sm:px-4 sm:text-sm"
           onClick={handleLogout}
         >
-          Logout
+          <span className="hidden sm:inline">Logout</span>
+          <span className="sm:hidden">🚪</span>
         </button>
       </div>
     </nav>

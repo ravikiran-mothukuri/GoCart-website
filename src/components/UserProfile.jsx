@@ -202,7 +202,7 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      
+
 
       setIsEditing(false);
       showMessage("success", "Profile updated successfully!");
@@ -214,10 +214,17 @@ const UserProfile = () => {
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 lg:px-8">
       {message && (
-        <div className="fixed top-24 right-4 z-50 animate-bounce rounded-xl bg-gray-900/90 px-6 py-3 text-white shadow-xl backdrop-blur-sm">
-          {message.text}
+        <div
+          className={`fixed left-1/2 top-24 z-[9999] flex min-w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-xl px-5 py-3.5 shadow-2xl backdrop-blur-sm transition-all sm:left-auto sm:right-6 sm:top-28 sm:min-w-[320px] sm:translate-x-0 ${message.type === 'success' ? 'bg-green-600 text-white' :
+              message.type === 'error' ? 'bg-red-600 text-white' :
+                'bg-gray-900/90 text-white'
+            }`}
+          role="alert"
+        >
+          <span className="text-sm font-medium sm:text-base">{message.text}</span>
         </div>
       )}
+
 
       <div className="mx-auto max-w-6xl">
         {/* HEADER */}

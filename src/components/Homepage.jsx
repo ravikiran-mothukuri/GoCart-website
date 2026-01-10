@@ -79,10 +79,14 @@ const Homepage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 px-4 py-8 text-gray-800">
       {message && (
-        <div className="fixed top-24 right-4 z-50 animate-bounce rounded-xl bg-gray-900/90 px-6 py-3 text-white shadow-xl backdrop-blur-sm sm:top-24">
-          {message}
+        <div
+          className="fixed left-1/2 top-24 z-[9999] flex min-w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-xl bg-gray-900/90 px-5 py-3.5 text-white shadow-2xl backdrop-blur-sm transition-all sm:left-auto sm:right-6 sm:top-28 sm:min-w-[320px] sm:translate-x-0"
+          role="alert"
+        >
+          <span className="text-sm font-medium sm:text-base">{message}</span>
         </div>
       )}
+
 
       <h1 className="mb-8 text-center text-3xl font-bold text-gray-800 lg:text-4xl">
         Available Products
@@ -128,10 +132,10 @@ const Homepage = () => {
                 <strong className="font-medium text-gray-700">Stock:</strong>{" "}
                 <span
                   className={`font-semibold ${product.quantity > 10
-                      ? "text-green-600"
-                      : product.quantity > 0
-                        ? "text-orange-600"
-                        : "text-red-600"
+                    ? "text-green-600"
+                    : product.quantity > 0
+                      ? "text-orange-600"
+                      : "text-red-600"
                     }`}
                 >
                   {product.quantity > 0 ? product.quantity : "Out of stock"}

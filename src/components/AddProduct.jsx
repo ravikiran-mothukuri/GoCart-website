@@ -108,21 +108,24 @@ const AddProduct = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-12">
+      {/* Toast Notification */}
+      {message && (
+        <div
+          className={`fixed left-1/2 top-24 z-[9999] flex min-w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-xl px-5 py-3.5 shadow-2xl backdrop-blur-sm transition-all sm:left-auto sm:right-6 sm:top-28 sm:min-w-[320px] sm:translate-x-0 ${message.type === 'success' ? 'bg-green-600 text-white' :
+              message.type === 'error' ? 'bg-red-600 text-white' :
+                'bg-gray-900/90 text-white'
+            }`}
+          role="alert"
+        >
+          <span className="text-sm font-medium sm:text-base">{message.text}</span>
+        </div>
+      )}
+
       <div className="mx-auto max-w-3xl rounded-2xl bg-white p-8 shadow-xl">
         <h2 className="mb-8 text-center text-3xl font-bold text-gray-800">
           Add New Product
         </h2>
 
-        {message && (
-          <div
-            className={`mb-6 rounded-xl p-4 text-center font-medium ${message.type === "success"
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-              }`}
-          >
-            {message.text}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit}>
           {/* Product Fields */}

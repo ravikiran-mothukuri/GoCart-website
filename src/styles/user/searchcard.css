@@ -1,29 +1,43 @@
 /* Card container */
 .search-card {
-  width: 300px;
+  width: 100%;
+  max-width: 300px;
+  min-width: 250px;
   background: #ffffff;
   border: 1px solid #e3e6e6;
   border-radius: 12px;
-  box-shadow: 0 3px 6px rgba(0,0,0,.08);
-  padding: 16px;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, .08);
+  padding: 12px;
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
+@media (min-width: 640px) {
+  .search-card {
+    padding: 16px;
+  }
+}
+
 .search-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, .12);
 }
 
 /* IMAGE (same as homepage) */
 .search-image {
   width: 100%;
-  height: 200px;
+  height: 160px;
   object-fit: cover;
   background: #f6f7f8;
   border-radius: 10px;
   margin-bottom: 10px;
+}
+
+@media (min-width: 640px) {
+  .search-image {
+    height: 200px;
+  }
 }
 
 /* Title */

@@ -19,11 +19,17 @@ const DeliveryProfile = () => {
   });
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [message, setMessage] = useState(null); // { type, text }
   const { deliveryToken } = useContext(AuthContext);
 
   const mapContainer = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
+    setTimeout(() => setMessage(null), 3000);
+  };
 
   useEffect(() => {
     if (!deliveryToken) return;
@@ -93,10 +99,11 @@ const DeliveryProfile = () => {
           headers: { Authorization: `Bearer ${deliveryToken}` },
         }
       );
-      // Removed alert, could use toast
+      showMessage('success', 'Profile updated successfully!');
       setIsEditing(false);
     } catch (err) {
       console.error(err);
+      showMessage('error', 'Failed to update profile');
     }
   };
 
@@ -126,7 +133,7 @@ const DeliveryProfile = () => {
 
   const updateLocation = async () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
+      showMessage('error', 'Geolocation is not supported by your browser');
       return;
     }
 
@@ -150,13 +157,14 @@ const DeliveryProfile = () => {
             currentLongitude: position.coords.longitude
           }));
 
-          alert("Location updated successfully!");
+          showMessage('success', 'Location updated successfully!');
         } catch (err) {
           console.error(err);
+          showMessage('error', 'Failed to update location');
         }
       },
       (error) => {
-        alert("Please enable location services");
+        showMessage('error', 'Please enable location services');
         console.error(error);
       }
     );
@@ -172,6 +180,19 @@ const DeliveryProfile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 lg:px-8">
+      {/* Toast Notification */}
+      {message && (
+        <div
+          className={`fixed left-1/2 top-24 z-[9999] flex min-w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-xl px-5 py-3.5 shadow-2xl backdrop-blur-sm transition-all sm:left-auto sm:right-6 sm:top-28 sm:min-w-[320px] sm:translate-x-0 ${message.type === 'success' ? 'bg-green-600 text-white' :
+              message.type === 'error' ? 'bg-red-600 text-white' :
+                'bg-gray-900/90 text-white'
+            }`}
+          role="alert"
+        >
+          <span className="text-sm font-medium sm:text-base">{message.text}</span>
+        </div>
+      )}
+
       <h2 className="mb-8 text-2xl font-bold text-gray-900">👤 My Profile</h2>
 
       <div className="mx-auto grid max-w-5xl gap-8 lg:grid-cols-2">

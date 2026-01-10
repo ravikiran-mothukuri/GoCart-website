@@ -46,7 +46,7 @@ const Navbar = () => {
       {role === "USER" && (
         <Link
           to="/userProfile"
-          className="whitespace-nowrap text-[15px] font-bold transition-colors"
+          className="hidden whitespace-nowrap text-[15px] font-bold transition-colors sm:block"
         >
           {user ? (
             <>
@@ -89,25 +89,25 @@ const Navbar = () => {
         {role === "USER" && (
           <Link
             to="/wishlist"
-            className="rounded-xl bg-transparent px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:py-2.5 md:text-[15px]"
+            className="rounded-xl bg-transparent px-4 py-2.5 text-[14px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:text-[15px]"
           >
-            My Wishlist ❤️
+            <span className="hidden sm:inline">My Wishlist </span>❤️
           </Link>
         )}
 
         {role === "ADMIN" && (
           <Link
             to="/addproduct"
-            className="rounded-xl bg-transparent px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:py-2.5 md:text-[15px]"
+            className="rounded-xl bg-transparent px-4 py-2.5 text-[14px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:text-[15px]"
           >
-            Add Product
+            <span className="hidden sm:inline">Add </span>Product
           </Link>
         )}
 
         {role === "USER" && (
           <Link
             to="/userprofile"
-            className="rounded-xl bg-transparent px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:py-2.5 md:text-[15px]"
+            className="rounded-xl bg-transparent px-4 py-2.5 text-[14px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:text-[15px]"
           >
             {user ? <span>{user.firstname}</span> : <span>Profile</span>}
           </Link>
@@ -116,40 +116,40 @@ const Navbar = () => {
         {role === "USER" && (
           <Link
             to="/orders"
-            className="rounded-xl bg-transparent px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:py-2.5 md:text-[15px]"
+            className="rounded-xl bg-transparent px-4 py-2.5 text-[14px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:text-[15px]"
           >
-            📦 My Orders
+            📦<span className="hidden sm:inline"> Orders</span>
           </Link>
         )}
 
         {role === "USER" && (
           <Link
             to="/cart"
-            className="rounded-xl bg-transparent px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:py-2.5 md:text-[15px]"
+            className="rounded-xl bg-transparent px-4 py-2.5 text-[14px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:text-[15px]"
           >
-            Cart
+            🛒<span className="hidden sm:inline"> Cart</span>
           </Link>
         )}
 
         {token ? (
           <button
             onClick={handleSignOut}
-            className="rounded-xl bg-red-100 px-3 py-2 text-[13px] font-semibold text-red-600 transition-all hover:bg-red-200 hover:text-red-700 md:px-5 md:py-2.5 md:text-[15px]"
+            className="rounded-xl bg-red-100 px-4 py-2.5 text-[14px] font-semibold text-red-600 transition-all hover:bg-red-200 hover:text-red-700 md:px-5 md:text-[15px]"
           >
-            Sign Out
+            <span className="hidden sm:inline">Sign </span>Out
           </button>
         ) : (
           <div className="flex items-center gap-2">
             <Link
               to="/register"
-              className="rounded-xl bg-transparent px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:py-2.5 md:text-[15px]"
+              className="rounded-xl bg-transparent px-4 py-2.5 text-[14px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:text-[15px]"
             >
               Register
             </Link>
 
             <Link
               to="/login"
-              className="rounded-xl bg-transparent px-3 py-2 text-[13px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:py-2.5 md:text-[15px]"
+              className="rounded-xl bg-transparent px-4 py-2.5 text-[14px] font-medium text-gray-700 transition-all hover:bg-green-50 hover:text-green-600 md:px-5 md:text-[15px]"
             >
               Login
             </Link>
