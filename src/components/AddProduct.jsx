@@ -11,6 +11,17 @@ const uploadToCloudinary = async (file) => {
   });
 
   const data = await res.json();
+
+  // Check if upload failed
+  if (!res.ok || data.error) {
+    console.error("Cloudinary upload failed:", {
+      status: res.status,
+      statusText: res.statusText,
+      error: data.error || data
+    });
+    throw new Error(data.error?.message || "Image upload failed");
+  }
+
   return data.secure_url;
 };
 
@@ -112,8 +123,8 @@ const AddProduct = () => {
       {message && (
         <div
           className={`fixed left-1/2 top-24 z-[9999] flex min-w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-xl px-5 py-3.5 shadow-2xl backdrop-blur-sm transition-all sm:left-auto sm:right-6 sm:top-28 sm:min-w-[320px] sm:translate-x-0 ${message.type === 'success' ? 'bg-green-600 text-white' :
-              message.type === 'error' ? 'bg-red-600 text-white' :
-                'bg-gray-900/90 text-white'
+            message.type === 'error' ? 'bg-red-600 text-white' :
+              'bg-gray-900/90 text-white'
             }`}
           role="alert"
         >
