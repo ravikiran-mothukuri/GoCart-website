@@ -23,7 +23,7 @@ const AddProduct = () => {
     price: "",
     category: "",
     quantity: "",
-    releasedate: "",
+    releaseDate: "",
   });
 
   const [imageFile, setImageFile] = useState(null);
@@ -89,7 +89,7 @@ const AddProduct = () => {
           price: "",
           category: "",
           quantity: "",
-          releasedate: "",
+          releaseDate: "",
         });
         setImageFile(null);
         if (fileInputRef.current) {
@@ -227,10 +227,10 @@ const AddProduct = () => {
             </label>
             <input
               type="date"
-              name="releasedate"
+              name="releaseDate"
               required
               className="block w-full rounded-xl border-2 border-gray-200 bg-white px-4 py-3 transition-all focus:border-green-500 focus:outline-none focus:ring-4 focus:ring-green-500/10"
-              value={product.releasedate}
+              value={product.releaseDate}
               onChange={handleInputChange}
             />
           </div>
