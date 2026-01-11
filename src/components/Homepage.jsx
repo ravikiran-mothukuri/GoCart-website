@@ -5,6 +5,9 @@ import CartContext from "./CartContext";
 
 const Homepage = () => {
   const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]); // Store all products
+  const [categories, setCategories] = useState([]); // Available categories
+  const [selectedCategory, setSelectedCategory] = useState("All"); // Selected category filter
   const [message, setMessage] = useState(null);
   const { addToCart } = useContext(CartContext);
   const role = localStorage.getItem("role");
@@ -18,13 +21,27 @@ const Homepage = () => {
         );
         if (!response.ok) throw new Error("Failed to fetch products");
         const data = await response.json();
+        setAllProducts(data);
         setProducts(data);
+
+        // Extract unique categories
+        const uniqueCategories = [...new Set(data.map(p => p.category))];
+        setCategories(uniqueCategories);
       } catch (error) {
         console.error("Error fetching products:", error);
       }
     };
     fetchProducts();
   }, []);
+
+  // Filter products when category changes
+  useEffect(() => {
+    if (selectedCategory === "All") {
+      setProducts(allProducts);
+    } else {
+      setProducts(allProducts.filter(p => p.category === selectedCategory));
+    }
+  }, [selectedCategory, allProducts]);
 
   const showMessage = (msg) => {
     setMessage(msg);
@@ -87,10 +104,52 @@ const Homepage = () => {
         </div>
       )}
 
+      {/* Header */}
+      <div className="mx-auto mb-6 max-w-7xl">
+        <h1 className="mb-4 text-center text-3xl font-bold text-gray-800 lg:text-4xl">
+          {selectedCategory === "All" ? "All Products" : selectedCategory}
+        </h1>
+        <p className="text-center text-gray-600">
+          {products.length} {products.length === 1 ? "product" : "products"} found
+        </p>
+      </div>
 
-      <h1 className="mb-8 text-center text-3xl font-bold text-gray-800 lg:text-4xl">
-        Available Products
-      </h1>
+      {/* Category Filter */}
+      {categories.length > 0 && (
+        <div className="mx-auto mb-8 max-w-7xl">
+          <div className="overflow-x-auto pb-2">
+            <div className="flex flex-wrap justify-center gap-3 min-w-max px-4 md:px-0">
+              {/* All Categories Button */}
+              <button
+                onClick={() => setSelectedCategory("All")}
+                className={`rounded-full px-6 py-2.5 text-sm font-semibold transition-all ${selectedCategory === "All"
+                  ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30"
+                  : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+                  }`}
+              >
+                All ({allProducts.length})
+              </button>
+
+              {/* Category Buttons */}
+              {categories.map((category) => {
+                const count = allProducts.filter(p => p.category === category).length;
+                return (
+                  <button
+                    key={category}
+                    onClick={() => setSelectedCategory(category)}
+                    className={`rounded-full px-6 py-2.5 text-sm font-semibold transition-all whitespace-nowrap ${selectedCategory === category
+                      ? "bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg shadow-green-500/30"
+                      : "bg-white text-gray-700 hover:bg-gray-50 border-2 border-gray-200"
+                      }`}
+                  >
+                    {category} ({count})
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       {products.length === 0 ? (
         <p className="py-12 text-center text-lg text-gray-500">
@@ -143,7 +202,7 @@ const Homepage = () => {
               </p>
               <p className="mb-2 text-sm text-gray-500">
                 <strong className="font-medium text-gray-700">Release Date:</strong>{" "}
-                {product.releasedate}
+                {product.releaseDate}
               </p>
               <p className="mb-4 line-clamp-3 overflow-hidden text-sm leading-relaxed text-gray-500">
                 <strong className="font-medium text-gray-700">Description:</strong>{" "}

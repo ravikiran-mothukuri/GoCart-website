@@ -20,6 +20,7 @@ import UserProfile from "./components/UserProfile";
 import { UserProvider } from "./components/UserContext";
 import MyOrders from "./components/MyOrders";
 import UserOrderTracking from "./components/UserOrderTracking";
+import CategoryPage from "./components/CategoryPage";
 
 
 
@@ -39,24 +40,24 @@ function LayoutWrapper() {
   const location = useLocation();
   const { deliveryToken } = useContext(AuthContext);
 
-  const isDeliveryRoute= location.pathname.startsWith("/delivery");
-  const isDeliveryAuthPage= location.pathname==="/delivery/login" || location.pathname==="/delivery/register";
+  const isDeliveryRoute = location.pathname.startsWith("/delivery");
+  const isDeliveryAuthPage = location.pathname === "/delivery/login" || location.pathname === "/delivery/register";
 
   const isLandingPage = location.pathname === "/";
 
 
   return (
     <>
-      
-      {!isDeliveryRoute && !isLandingPage&& <Navbar />}
 
-      
+      {!isDeliveryRoute && !isLandingPage && <Navbar />}
+
+
       {isDeliveryRoute && deliveryToken && !isDeliveryAuthPage && <DeliveryNavbar />}
 
       <Routes>
-        
+
         <Route path="/" element={<LandingPage />} />
-        
+
         {/* USER ROUTES */}
 
         <Route path="/login" element={<Login />} />
@@ -68,16 +69,17 @@ function LayoutWrapper() {
         <Route path="/search" element={<SearchResults />} />
         <Route path="/userprofile" element={<UserProfile />} />
         <Route path="/addproduct" element={<AddProduct />} />
+        <Route path="/category/:category" element={<CategoryPage />} />
         <Route path="/orders" element={<MyOrders />} />
 
         <Route path="/track-order/:orderId" element={<UserOrderTracking />} />
         <Route path="/myorders" element={<MyOrders />} />
 
         {/* DELIVERY ROUTES */}
-        
-        
+
+
         <Route path="/delivery/tracking/:orderId" element={<DeliveryTracking />} />
-        
+
 
         <Route path="/delivery/register" element={<PartnerRegister />} />
         <Route path="/delivery/login" element={<PartnerLogin />} />

@@ -40,7 +40,9 @@ const AddCart = () => {
         setTimeout(() => navigate("/orders"), 1500);
       } else {
         const error = await res.json();
-        showMessage("error", error.message || "Failed to place order");
+        console.log("Backend error response:", error); // Debug log
+        const errorMsg = error["something went wrong"] || error.message || "Failed to place order";
+        showMessage("error", errorMsg);
       }
     } catch (err) {
       console.error("Error placing order:", err);
@@ -104,8 +106,8 @@ const AddCart = () => {
       {message && (
         <div
           className={`fixed left-1/2 top-24 z-[9999] flex min-w-[280px] max-w-[90vw] -translate-x-1/2 items-center gap-3 rounded-xl px-5 py-3.5 shadow-2xl backdrop-blur-sm transition-all sm:left-auto sm:right-6 sm:top-28 sm:min-w-[320px] sm:translate-x-0 ${message.type === 'success' ? 'bg-green-600 text-white' :
-              message.type === 'error' ? 'bg-red-600 text-white' :
-                'bg-gray-900/90 text-white'
+            message.type === 'error' ? 'bg-red-600 text-white' :
+              'bg-gray-900/90 text-white'
             }`}
           role="alert"
         >
@@ -145,7 +147,7 @@ const AddCart = () => {
                     </p>
                   </div>
                   <p className="mt-1 text-sm text-gray-500">
-                    Typically ships in 3-4 weeks
+                    Delivery in a 1 hour.
                   </p>
                 </div>
 
